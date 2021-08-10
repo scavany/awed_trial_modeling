@@ -1,0 +1,336 @@
+\documentclass[11pt]{amsart}
+\usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
+\geometry{letterpaper}                   % ... or a4paper or a5paper or ... 
+%\geometry{landscape}                % Activate for for rotated page geometry
+%\usepackage[parfill]{parskip}    % Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{epstopdf}
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+
+\title{Brief Article}
+\author{The Author}
+%\date{}                                           % Activate to display a given date or no date
+
+\begin{document}
+\maketitle
+
+\section{Model description}
+
+We use a susceptible infected recovered (SIR) model defined in each of two clusters: treated, $t$, and control, $c$. Given that $S+I+R=N$ within each cluster, the dynamics of all six state variables are specified by
+
+\begin{align}
+\frac{dS_t}{dt} &= - 
+\Lambda_t S_t \\
+%\frac{dI_t}{dt} &= \Lambda_t S_t - \gamma I_t \\
+\frac{dS_c}{dt} &= - \Lambda_c S_c
+%\frac{dI_c}{dt} &= \Lambda_c I_c - \gamma I_c
+\end{align}
+
+\noindent The state variables are defined in units of people, in which case they account both for prevalence and population size. For the purpose of defining the initial conditions, we denote the initial susceptibility in both patches as $S'$ and the initial prevalence as $I'$. Thus, $S_t(0)=S'N_t$, $I_t(0)=I'N_t$, $S_c(0)=S'N_c$, and $I_c(0)=I'N_c$.
+
+
+\subsection{Contamination from mosquito movement}
+
+Let $\epsilon$ represent the effectiveness of the intervention, defined as the reduction in pre-intervention force of infection, $\Lambda$, when the intervention is applied at full coverage in a treatment cluster. We consider the coverage of the intervention in the two arms to follow $C_t$ and $C_c$. Hence,
+
+\begin{align}
+\Lambda_t &= (1-C_t\epsilon)\Lambda \\
+\Lambda_c &= (1-C_c\epsilon)\Lambda
+\end{align}
+
+\begin{align}
+\Lambda_t &= (1-\epsilon)\Lambda \\
+\Lambda_c &= \Lambda
+\end{align}
+
+
+\subsection{Contamination from human movement}
+
+Let $\rho_{ij}$ represent the proportion of their total time at risk that a resident of $i$ spends in $j$. As a result, the forces of infection on residents of $t$ and $c$ become
+
+\begin{align}
+\Lambda_t &= \left(\rho_{tt}(1-C_t\epsilon) + \rho_{tc}(1-C_c\epsilon)\right)\Lambda \\
+\Lambda_c &= \left(\rho_{cc}(1-C_c\epsilon) + \rho_{ct}(1-C_t\epsilon)\right)\Lambda
+\end{align}
+
+\noindent In this case, $\rho_{tt}+\rho_{tc}=1$ and $\rho_{cc}+\rho_{ct}=1$.
+
+
+\subsection{Suppression of pathogen circulation}
+
+Thus far, we have assumed that the overall circulation of the pathogen is unaffected by the intervention, given that $\Lambda$ remains constant. To relax this assumption, we define force of infection as a function of the prevalence of infection, such that we substitute $\Lambda$ with $\beta I(t)/N$, which is specific to each of $t$ and $c$. Combining all three effects, this yields 
+
+\begin{align}
+\Lambda_t(t) &= \rho_{tt}(1-C_t\epsilon)\beta\frac{I_t(t)}{N_t} + \rho_{tc}(1-C_c\epsilon)\beta\frac{I_c(t)}{N_c} \\
+\Lambda_c(t) &= \rho_{cc}(1-C_c\epsilon)\beta\frac{I_c(t)}{N_c} + \rho_{ct}(1-C_t\epsilon)\beta\frac{I_t(t)}{N_t}.
+\end{align}
+
+
+\section{Model analysis}
+
+Given the epidemic behavior of the SIR model, our interest is in quantifying the infection attack rate (IAR), $\pi$, within each of $t$ and $c$ during a trial. An implicit solution for $\pi_t$ and $\pi_c$ can be obtained from
+
+\begin{align}
+\pi_t &= 1 - S' e ^ {-\left(\pi_t \frac{N_t}{N_t+N_c} \rho_{tt} (1 - C_t \epsilon) \beta + \pi_c \frac{N_c}{N_t+N_c} \rho_{tc} (1 - C_c \epsilon) \beta \right)} \\
+\pi_c &= 1 - S' e ^ {-\left(\pi_c \frac{N_c}{N_t+N_c} \rho_{cc} (1 - C_c \epsilon) \beta + \pi_t \frac{N_t}{N_t+N_c} \rho_{ct} (1 - C_t \epsilon) \beta \right)} ,
+\end{align}
+
+\noindent as described by Miller \cite{Miller2012}.
+
+
+\section{Model parameterization}
+
+$\epsilon$, $C_t=0.96$ \cite{Utarini2021}, $C_c=0.15$, $\beta$, $S'=0.79$ to first or second infection, $\Lambda=0.0317767$ \cite{Cattarino2020}, $R_0=3.582622$ \cite{Cattarino}, $\gamma=0.1$ \cite{tenBosch2018}
+
+ages invited = 3-45
+ages participated = 11.6 median, 6.7-20.9 IQR
+
+\subsection{Apportionment of time at risk} We consider three possible spatial arrangements for the treatment and control clusters in a trial across a two-dimensional landscape. Under all scenarios, we assume that the population density per unit area is constant and that transmission potential, as captured by $\beta$, is homogeneous across the landscape prior to initiation of the trial.
+
+At the core of this derivation is the assumption that the location where an individual $j$ resides who was infected by an individual $i$ is determined by an isotropic transmission kernel, $k\left(|x_i-x_j|,|y_i-y_j|\right)$, where $x$ and $y$ are spatial coordinates for the residence of each of $i$ and $j$. We use a Laplace distribution with marginal density functions for each of the $x$ and $y$ coordinates,
+
+\begin{align}
+k(x_j|\mu=x_i,b) &= \frac{1}{2b} e^{-\frac{|x_j-\mu|}{b}} \\
+k(y_j|\mu=y_i,b) &= \frac{1}{2b} e^{-\frac{|y_j-\mu|}{b}} ,
+\end{align}
+
+\noindent where $\mu$ is the location parameter and $b$ is the scale parameter. We adopt a value of $b=198.4$ m informed by a distribution of transmission distances simulated with an agent-based model of dengue virus transmission in Iquitos, Peru \cite{Perkins2016,Cavany2020} that features a detailed, empirically informed description of human mobility based on retrospective survey data \cite{Perkins2014}.
+
+\subsubsection{Island}
+We first consider an island pattern, in which a focal square of width $\delta$ is under treatment, and all those surrounding it---out to some distance $\Delta$ in either the $x$ or $y$ direction---are either part of the control arm or are not involved in the trial.
+
+We approach this problem by first calculating the portion of time at risk that an individual $i$ residing somewhere within in an interval of width $\delta$ on a line experiences in an interval adjacent to it and extending out a distance $\Delta$. Let the former interval span $[\mu_l,\mu_r]$ and the latter span $[\mu_r,\mu_r+\Delta]$. If $i$ resides specifically at $x$, then the proportion of its time at risk in the other interval is
+
+\begin{equation}
+F(\mu_r+\Delta|x,b) - F(\mu_r|x,b) ,
+\end{equation}
+
+\noindent where $F$ is the Laplace distribution function. To average across all individuals $i$, we can integrate according to
+
+\begin{equation}
+\frac{1}{\delta} \int_{\mu_l}^{\mu_r} F(\mu_r+\Delta|\mu,b) - F(\mu_r|\mu,b) \, d\mu ,
+\label{eq:integral_island_+}
+\end{equation}
+
+\noindent which gives the proportion of time at risk in the interval of length $\Delta$ for an individual who resides in the interval of length $\delta$. Given that the Laplace distribution function is $F(x|\mu,b)=1-\frac{1}{2}\exp(-(x-\mu)/b)$ when $x>\mu$, eq. \eqref{eq:integral_island_+} evaluates to 
+
+\begin{equation}
+A_{\delta,\Delta} = \frac{b}{2\delta} \left(1 - e^{-\delta/b} - e^{-\Delta/b} + e^{-(\delta + \Delta)/b} \right) .
+\label{eq:AdeltaDelta}
+\end{equation}
+
+\noindent We can quantify the proportion of time at risk in the interval of width $\delta$ for individuals who reside there as 
+
+\begin{align}
+A_\delta &= 1 - 2 \lim_{\Delta\rightarrow\infty} A_{\delta,\Delta} \\
+ &= 1 - \frac{b}{\delta}\left( 1 - e^{-\delta/b} \right) .
+\label{eq:Adelta}
+\end{align}
+
+Next, we apply the calculation for time at risk in intervals along a line to the two-dimensional landscape of an island under treatment centered in a sea without treatment. To do so, we work with the intersection of intervals along the x-axis and the y-axis. This yields $A_{\delta}^2$ as the proportion of time at risk on the island by its residents. The proportion of time at risk at sea by residents of the island is $4 A_{\delta} A_{\delta,\Delta} + 4 A_{\delta,\Delta}^2$, which sums the proportion of time at risk spent in each of eight different zones of the sea surrounding the island. Because $\Delta$ is finite, we must normalize these terms when calculating the proportion of time at risk by residents under treatment, yielding
+
+\begin{align}
+\rho_{tt} &= \frac{A_{\delta}^2}{A_{\delta}^2+4 A_{\delta} A_{\delta,\Delta} + 4 A_{\delta,\Delta}^2} \\
+\rho_{tc} &= \frac{4 A_{\delta} A_{\delta,\Delta} + 4 A_{\delta,\Delta}^2}{A_{\delta}^2+4 A_{\delta} A_{\delta,\Delta} + 4 A_{\delta,\Delta}^2} .
+\end{align}
+
+We can calculate time at risk on the island by residents of the sea by adapting eqns. \eqref{eq:AdeltaDelta} and \eqref{eq:Adelta} to account for their differing dimensions to produce two additional terms,
+
+\begin{align}
+A_{\Delta} &= 1 - \frac{b}{\Delta} \left( 1 - e^{-\Delta/b} \right) \\
+A_{\Delta,\delta} &= \frac{b}{2\Delta} \left(1 - e^{-\Delta/b} - e^{-\delta/b} + e^{-(\Delta + \delta)/b} \right) .
+\end{align}
+
+\noindent Time at risk by those who reside in areas not under treatment is then apportioned as
+
+\begin{align}
+\rho_{cc} &= \frac{4 A_{\Delta}^2 + 4 A_{\delta}A_{\Delta}}{4 A_{\Delta}^2 + 4 A_{\delta}A_{\Delta}+4 A_{\Delta,\delta}^2 + 4 A_{\Delta,\delta} A_{\delta}} \\
+\rho_{ct} &= \frac{4 A_{\Delta,\delta}^2 + 4 A_{\Delta,\delta} A_{\delta}}{4 A_{\Delta}^2 + 4 A_{\delta}A_{\Delta}+4 A_{\Delta,\delta}^2 + 4 A_{\Delta,\delta} A_{\delta}} .
+\end{align}
+
+\noindent For all of the $\rho$ terms, we assume that any time at risk that the Laplace kernel would have an individual spend beyond the landscape gets reapportioned within the landscape, such that the total proportion of time at risk is 1 for all residents of the landscape.
+
+In addition to time at risk, the relative populations under treatment and control depend on $\delta$ and $\Delta$. Relative to the population under treatment, $N_t$, the population not under treatment is
+
+\begin{equation}
+N_c=\frac{4\Delta^2+4\Delta\delta}{\delta^2}N_t.
+\end{equation}
+
+\subsubsection{Archipelago}
+We now consider an archipelago pattern, in which a focal square of width $\delta$ is under treatment, as are other squares of width $\delta$ spaced $\Delta$ apart between their nearest edges. In between and surrounding those squares is a sea without treatment.
+
+We can use some of the same calculations that applied to the island pattern, but we will need some others, as well. In addition to adjacent intervals, we need to be able to calculate the time at risk in a non-adjacent interval of width $\delta_3$ whose edge is spaced distance $\delta_2$ away from the nearest edge of the interval where the individual resides, which has width $\delta_1$. Applying similar reasoning as in eqn. \eqref{eq:integral_island_+}, we obtain
+
+\begin{equation}
+A_{\delta_1,\delta_2,\delta_3} = \frac{b}{2\delta_1} \left(e^{-\delta_2/b} - e^{-(\delta_1 +\delta_2)/b} - e^{-(\delta_2 +\delta_3)/b} + e^{-(\delta_1+\delta_2+\delta_3)/b} \right) .
+\label{eq:Adelta123}
+\end{equation}
+
+Next, we use the aforementioned probabilities of movement between intervals on a line to calculate the proportions of time at risk for residents who live under treatment or not. First, for an individual who lives under treatment, the proportion of their time in areas under treatment in their home square and two layers out is
+
+\begin{equation}
+B = A_{\delta}^2 + 4 A_{\delta,\Delta,\delta}A_{\delta} + 4 A_{\delta,\Delta,\delta}^2 + 4 A_{\delta,2\Delta+\delta,\delta}A_{\delta} + 8 A_{\delta,2\Delta+\delta,\delta}A_{\delta,\Delta,\delta} + 4 A_{\delta,2\Delta+\delta,\delta}^2 .
+\end{equation}
+
+\noindent The proportion of their time in areas not under treatment within that same distance from their home square is
+
+\begin{equation}
+C = 
+4 A_{\delta,\Delta}^2 + 4 A_{\delta,\Delta} A_\delta + 
+8 A_{\delta,\Delta} A_{\delta,\Delta,\delta} +
+8 A_{\delta,\Delta+\delta,\Delta} A_{\delta,\Delta} +
+4 A_{\delta,\Delta+\delta,\Delta} ^ 2 +
+8 A_{\delta,2\Delta+\delta,\delta} A_{\delta,\Delta} +
+8 A_{\delta,2\Delta+\delta,\delta} ^ 2 .
+\end{equation}
+
+\noindent Based on this, we can define the total proportion of time under treatment or not as
+
+\begin{align}
+\rho_{tt} &= \frac{B}{B+C} \\
+\rho_{tc} &= \frac{C}{B+C} 
+\end{align}
+
+\noindent for individuals residing under treatment.
+
+We consider two types of untreated patches in which individuals may reside. The first are squares of width $\Delta$ on each side. For these patches, the proportion of time spent under treatment is
+
+\begin{equation}
+D = 4 A_{\Delta,\delta}^2 +
+8 A_{\Delta,\delta+\Delta,\delta} A_{\Delta,\delta} +
+4 A_{\Delta,\delta+\Delta,\delta}^2  
+\end{equation}
+
+\noindent within the nearest two layers of treated squares. The proportion of time not under treatment for residents of those patches is
+
+\begin{align}
+E =\, &A_\Delta^2 + 4 A_{\Delta,\delta} A_{\Delta} +
+4 A_{\Delta,\delta,\Delta} A_{\Delta} +
+4 A_{\Delta,\delta,\Delta} ^ 2 + \\
+&8 A_{\Delta,\delta,\Delta} A_{\Delta,\delta} +
+4 A_{\Delta,\delta+\Delta,\delta} A_{\Delta} + 
+8 A_{\Delta,\delta+\Delta,\delta} A_{\Delta,\delta,\Delta}
+\end{align}
+
+\noindent The second type of patch not under treatment are rectangles of width $\delta$ and length $\Delta$. For these patches, the proportion of time spent under treatment is
+
+\begin{align}
+F =\, &2 A_{\Delta,\delta} A_\delta +
+4 A_{\Delta,\delta} A_{\delta,\Delta,\delta} + 
+4 A_{\Delta,\delta} A_{\delta,2\Delta+\delta,\delta} + \\
+&2 A_{\Delta,\delta+\Delta,\delta} A_\delta +
+4 A_{\Delta,\delta+\Delta,\delta} A_{\delta,\Delta,\delta} +
+4 A_{\Delta,\delta+\Delta,\delta} A_{\delta,\delta+2\Delta,\delta} ,
+\end{align}
+
+\noindent and the proportion of time spent elsewhere is
+
+\begin{align}
+G =\, &A_\Delta A_\delta + 2 A_{\delta,\Delta} A_\Delta +
+2 A_{\delta,\Delta,\delta} A_\Delta +
+2 A_{\delta,\Delta+\delta,\Delta} A_\Delta +
+2 A_{\delta,2\Delta+\delta,\delta} A_\Delta +
+4 A_{\delta,\Delta} A_{\Delta,\delta} + \\
+&4 A_{\delta,\Delta+\delta,\Delta} A_{\Delta,\delta} +
+2 A_{\Delta,\delta,\Delta} A_\delta +
+4 A_{\Delta,\delta,\Delta} A_{\delta,\Delta} +
+4 A_{\Delta,\delta,\Delta} A_{\delta,\Delta,\delta} +
+4 A_{\Delta,\delta,\Delta} A_{\delta,\Delta+\delta,\Delta} + \\
+&4 A_{\Delta,\delta,\Delta} A_{\delta,2\Delta+\delta,\delta} +
+4 A_{\Delta,\delta+\Delta,\delta} A_{\delta,\Delta} +
+4 A_{\Delta,\delta+\Delta,\delta} A_{\delta,\Delta+\delta,\Delta} .
+\end{align}
+
+Relative to the population under treatment, the population not under treatment is
+
+\begin{equation}
+N_c=\frac{\Delta^2+2\Delta\delta}{\delta^2}N_t .
+\end{equation}
+
+\noindent Of that population, a proportion $\Delta^2/(\Delta^2+2\Delta\delta)$ resides in areas of the type to which $D$ and $E$ apply and $2\Delta\delta/(\Delta^2+2\Delta\delta)$ resides in areas of the type to which $F$ and $G$ apply. Based on this, we can define the total proportion of time under treatment or not as
+
+\begin{align}
+\rho_{ct} &= \frac{\Delta D+2\delta F}{\Delta(D+E)+2\delta(F+G)} \\
+\rho_{cc} &= \frac{\Delta E+2\delta G}{\Delta(D+E)+2\delta(F+G)} .
+\end{align}
+
+\noindent for individuals not residing under treatment.
+
+\subsubsection{Checkerboard}
+
+The final pattern we consider is a checkerboard, with alternating squares of width $\delta$ corresponding to treatment and control clusters within a continuous urban area. Although any such area would have borders in reality, we ignore any possible edge effects and assume that the extent of interactions between squares of type $t$ and $c$ in the interior of the checkerboard provide a suitable characterization of overall interaction between individuals residing in $t$ and $c$, as summarized by $\rho_{tt}$ and $\rho_{cc}$. In this case, because the area and arrangement of $t$ and $c$ squares are identical, $\rho_{tt}=\rho_{cc}$. Likewise, $\rho_{tc}=\rho_{ct}$, and $N_t=N_c$.
+
+We can calculate the proportion of time spent in like squares by applying the probabilities used to calculate the proportions of time spent for the previous spatial patterns. Going out three layers from a focal square, the proportion of time spent in like squares is
+
+\begin{equation}
+H = A_\delta^2 + 4 A_{\delta,\delta}^2 + 4 A_{\delta,\delta,\delta}A_\delta + 4 A_{\delta,\delta,\delta}^2 + 8 A_{\delta,2\delta,\delta} A_{\delta,\delta} + 4 A_{\delta,2\delta,\delta}^2 ,
+\end{equation}
+
+\noindent and the proportion of time spent in unlike squares is
+
+\begin{equation}
+I = 4 A_{\delta,\delta}A_\delta + 8 A_{\delta,\delta,\delta} A_{\delta,\delta} + 4 A_{\delta,2\delta,\delta} A_\delta + 8 A_{\delta,2\delta,\delta}^2 .
+\end{equation}
+
+\noindent The total proportion of time under treatment or not is then
+
+\begin{align}
+\rho_{tt} = \rho_{cc} &= H / (H+I) \\
+\rho_{tc} = \rho_{ct} &= I / (H+I) .
+\end{align}
+
+
+
+
+
+
+
+%\pagebreak
+%
+%We approach this problem by first calculating the portion of time at risk that an individual $i$ residing somewhere within in an interval of width $\delta$ on a line experiences in an interval of width $\delta$ located $n$ intervals to the right. Let the former interval span $[\mu_l,\mu_r]$ and the latter span $[\mu_l+n\delta,\mu_r+n\delta]$. If $i$ resides specifically at $x$, then the proportion of its time at risk in the other interval is
+%
+%\begin{equation}
+%F(\mu_r+n\delta|x,b) - F(\mu_l+n\delta|x,b) ,
+%\end{equation}
+%
+%\noindent where $F$ is the Laplace distribution function. To average across all individuals $i$, we can integrate according to
+%
+%\begin{equation}
+%\frac{1}{\delta} \int_{\mu_l}^{\mu_r} F(\mu_r+n\delta|\mu,b) - F(\mu_l+n\delta|\mu,b) \, d\mu ,
+%\label{eq:integral_checkerboard_ij}
+%\end{equation}
+%
+%\noindent which gives the proportion of time at risk for an individual from one interval in another interval $n$ away from where it resides. Given that the Laplace distribution function is $F(x|\mu,b)=1-\frac{1}{2}\exp(-(x-\mu)/b)$ when $x>\mu$, eq. \eqref{eq:integral_checkerboard_ij} evaluates to 
+%
+%\begin{equation}
+%\frac{b}{2\delta} \left(e^{-(n-1)\delta/b} - 2e^{-n\delta/b} + e^{-(n+1)\delta/b} \right) .
+%\label{eq:prob_checkerboard_n}
+%\end{equation}
+%
+%Next, we apply the calculation for time at risk in intervals along a line to squares within a grid. To do so, we work with the intersection of intervals along the x-axis and the y-axis, which together define a grid. If we refer to the expression in eq. \eqref{eq:prob_checkerboard_n} as $A_m$, then the proportion of time at risk in a grid cell $m$ intervals away along one axis and $n$ away along another is $A_m A_n$. We define $A_0$ as $1-\sum_{m=1}^{10} 2 A_m$. Within the first ring of grid cells around a focal grid cell, there are unlike grid cells at which the proportion of time at risk totals $4A_0A_1$. Within the second ring, the proportion of time at risk at unlike grid cells totals $4A_2A_1+4A_2^2$. Within the third ring, it totals $4A_0A_3+8A_2A_3+4A_3^2$. Under our model parameterization for $b$ and $\delta$, the proportion of time at risk spent in unlike grid cells within the first three rings around a focal grid cell is 0.317, with this value appearing not to change within a precision of $10^{-3}$ in the third layer. Based on that, we set $\rho_{tt}=\rho_{cc}=0.683$.
+%
+%
+%
+%
+%
+%
+%
+%
+%\begin{equation}
+%\frac{b}{2\delta} \left(e^{\mu_2 - \mu_3} - e^{\mu_1 - \mu_3} - e^{\mu_2 - \mu_4} + e^{\mu_1 - \mu_4} \right) .
+%\label{eq:prob_checkerboard_n}
+%\end{equation}
+
+
+
+
+
+
+
+
+
+
+
+
+\end{document}  
