@@ -9,7 +9,7 @@ loss.two = function(pi.t,pi.c){
     pi.c * Nc/(Nt+Nc) * rho.tc * (1 - Cc * epsilon) * R0))) ^ 2 +
   abs(pi.c - 1 + S0 * exp(-(
     pi.t * Nt/(Nt+Nc) * rho.ct * (1 - Ct * epsilon) * R0 +
-    pi.c * Nc/(1+Nc) * rho.cc * (1 - Cc * epsilon) * R0))) ^ 2
+    pi.c * Nc/(Nt+Nc) * rho.cc * (1 - Cc * epsilon) * R0))) ^ 2
 }
 
 # calculate susceptible population with Indonesia demography and FOI
@@ -236,7 +236,7 @@ H.fn = function(b,d){
 }
 I.fn = function(b,d){
   4*A.d1d2(b,d,d)*A.d(b,d) + 8*A.d1d2d3(b,d,d,d)*A.d1d2(b,d,d) +
-  4*A.d1d2d3(b,d,2*d,d)*A.d(b,d) + 8*A.d1d2d3(b,d,2*d,d)^2
+  4*A.d1d2d3(b,d,2*d,d)*A.d(b,d) + 8*A.d1d2d3(b,d,2*d,d)*A.d1d2d3(b,d,d,d)
 }
 rho_tt_checker = rho_cc_checker = function(b,d){
   H.fn(b,d) / (H.fn(b,d) + I.fn(b,d))
