@@ -5,11 +5,11 @@ loss.one = function(pi){
 }
 loss.two = function(pi.t,pi.c){
   abs(pi.t - 1 + S0 * exp(-(
-    pi.t * Nt/(Nt+Nc) * rho.tt * (1 - Ct * epsilon) * R0 +
-    pi.c * Nc/(Nt+Nc) * rho.tc * (1 - Cc * epsilon) * R0))) ^ 2 +
+    pi.t * rho.tt * (1 - Ct * epsilon) * R0 +
+    pi.c * rho.tc * (1 - Cc * epsilon) * R0))) ^ 2 +
   abs(pi.c - 1 + S0 * exp(-(
-    pi.t * Nt/(Nt+Nc) * rho.ct * (1 - Ct * epsilon) * R0 +
-    pi.c * Nc/(Nt+Nc) * rho.cc * (1 - Cc * epsilon) * R0))) ^ 2
+    pi.t * rho.ct * (1 - Ct * epsilon) * R0 +
+    pi.c * rho.cc * (1 - Cc * epsilon) * R0))) ^ 2
 }
 
 # calculate susceptible population with Indonesia demography and FOI
@@ -35,6 +35,7 @@ age.dist = cbind(
 
 
 # look at relationship between epsilon and efficacy
+# with mosquito contamination but no human mvmt
 R0 = 3.582622
 Ct = 0.958
 Cc = 0.15
@@ -410,9 +411,14 @@ epsilon = 0
 IAR.max = (optim(c(0.9,0.9),function(par)
   loss.two(par[1],par[2]),lower=c(0,0),upper=c(1,1),method='L-BFGS-B',
   control = list(reltol=1e-12))$par - (1 - S0))[1]
-FOI.max = -log(1-IAR.max)
+FOI.max = -log(1-IAR.max) ## Time units? What if time changes as R changes, is this an issue?
 
-
+# Account for when R0 goes below 1
+R0c <- function(epsilon) {rho.tc*(1-Cc*epsilon)*R0+rho.cc*(1-Cc*epsilon)*R0}
+R0t <- function(epsilon) {rho.tt*(1-Ct*epsilon)*R0+rho.ct*(1-Ct*epsilon)*R0}
+plot(epsilon.vec,R0t(epsilon.vec),type='l')
+lines(epsilon.vec,R0c(epsilon.vec),col='red')
+abline(h=1,lty="dashed")
 
 # look at effect on IAR
 R0 = 3.582622
@@ -435,9 +441,15 @@ for(jj in 1:length(epsilon.vec)){
   IAR.human[,jj] = c(
     1-exp(-FOI.max*(rho.tt*(1-Ct*epsilon)+rho.tc*(1-Cc*epsilon))),
     1-exp(-FOI.max*(rho.cc*(1-Cc*epsilon)+rho.ct*(1-Ct*epsilon))))
+  ##if (R0t(epsilon) > 1) {
   IAR[,jj] = optim(c(0.9,0.9),function(par)
-    loss.two(par[1],par[2]),lower=c(0,0),upper=c(1,1),method='L-BFGS-B',
-    control = list(reltol=1e-12))$par - (1 - S0)
+      loss.two(par[1],par[2]),lower=c(0,0),upper=c(1,1),method='L-BFGS-B',
+      control = list(reltol=1e-12))$par - (1 - S0)
+  ## } else {
+  ##     IAR[,jj] = c(0,(optim(c(0.9,0.9),function(par)
+  ##         loss.two(par[1],par[2]),lower=c(0,0),upper=c(1,1),method='L-BFGS-B',
+  ##         control = list(reltol=1e-12))$par - (1 - S0))[2]) ## This is not quite right! Don't think you can use the loss.two anymore. Need a new fn with pi.t = 0.
+  ## }
 }
 matplot(t(IAR.mosquito),type='l',lty=1,ylim=c(0,1))
 matplot(t(IAR.human),type='l',lty=1,ylim=c(0,1))

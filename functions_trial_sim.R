@@ -3,13 +3,13 @@
 loss.one = function(pi, S0, R0){
   abs(pi - 1 + S0 * exp(-R0 * pi))
 }
-loss.two = function(pi.t, pi.c, rho.tt, rho.tc, rho.cc, rho.ct, Ct, Cc, Nt, Nc, epsilon, R0){
-  abs(pi.t - 1 + S0 * exp(-2 * (
-    pi.t * Nt/(Nt+Nc) * rho.tt * (1 - Ct * epsilon) * R0 +
-      pi.c * Nc/(Nt+Nc) * rho.tc * (1 - Cc * epsilon) * R0))) ^ 2 +
-    abs(pi.c - 1 + S0 * exp(-2 * (
-      pi.t * Nt/(Nt+Nc) * rho.ct * (1 - Ct * epsilon) * R0 +
-        pi.c * Nc/(Nt+Nc) * rho.cc * (1 - Cc * epsilon) * R0))) ^ 2
+loss.two = function(pi.t, pi.c, rho.tt, rho.tc, rho.cc, rho.ct, Ct, Cc, epsilon, S0, R0){
+  abs(pi.t - 1 + S0 * exp(-(
+    pi.t * rho.tt * (1 - Ct * epsilon) * R0 +
+    pi.c * rho.tc * (1 - Cc * epsilon) * R0))) ^ 2 +
+  abs(pi.c - 1 + S0 * exp(-(
+    pi.t * rho.ct * (1 - Ct * epsilon) * R0 +
+    pi.c * rho.cc * (1 - Cc * epsilon) * R0))) ^ 2
 }
 
 # spatial landscapes
