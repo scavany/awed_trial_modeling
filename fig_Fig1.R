@@ -1,0 +1,113 @@
+# set working directory
+setwd('~/Documents/awed_trial_modeling/')
+
+# clear existing workspace
+rm(list = ls())
+
+# install necessary packages
+if(!require(seqinr)){install.packages('seqinr'); library(seqinr)}
+
+# load the data 
+load('./fig_1.RData')
+
+palette <- c('#4FA9BB',
+             'paleturquoise')
+
+# generate plot 
+pdf(file = './fig_1_tmp.pdf', width = 10 * (5/6), height = 5)
+layout(mat = matrix(1:6, nrow = 2, byrow = T))
+par(mar = c(3.3,3.6,1.3,1.2))
+plot.new()
+mtext(side = 3, line = 0, adj = 0, 'A', font = 2)
+
+#plot.new()
+#mtext(side = 3, line = 0, adj = 0, 'B', font = 2)
+
+plot(NA, NA, xlim = c(0,max(b.vec)), ylim = c(0.5,1), axes = F,
+     xaxs = 'i', yaxs = 'i', xlab = '', ylab = '')
+abline(h = seq(from = 0.5, to = 1, by = 0.1),
+       v = seq(from = 0, to = 1000, by = 200),
+       col = col2alpha('gray', alpha = 0.5), lwd = 1.25, lty = 3)
+lines(b.vec, rho.vec.by.b, lwd = 1.5, col = '#222222')
+box()
+axis(side = 1)
+axis(side = 2, las = 1, at = seq(from = 0.5, to = 1, by = 0.1), labels = seq(from = 50, to = 100, by = 10))
+mtext(side = 1, line = 2.3, expression('Scale of human movement (m), ' * italic('b')))
+mtext(side = 2, line = 2.3, expression('Time in home cluster (%), ' * rho))
+mtext(side = 3, line = 0, adj = 0, 'B', font = 2)
+
+plot(NA, NA, xlim = c(0.9,1), ylim = c(0.8,1), axes = F,
+     xaxs = 'i', yaxs = 'i', xlab = '', ylab = '')
+abline(h = seq(from = 0.8, to = 1, by = 0.05),
+       v = seq(from = 0.9, to = 1, by = 0.02),
+       col = col2alpha('gray', alpha = 0.5), lwd = 1.25, lty = 3)
+contour(rho.implied.vec, epsilon.implied.vec,
+        epsilon.implied.mat,levels = epsilon.implied.trial,
+        lty = 1, lwd = 1.5, add=  T, drawlabels = F,
+        col = c(palette[2], palette[1], palette[2]))
+box()
+axis(side = 1, at = seq(from = 0.90, to = 1, by = 0.02), labels = seq(from = 90, to = 100, by = 2))
+axis(side = 2, las = 1, at = seq(from = 0.8, to = 1, by = 0.05), labels = seq(from = 80, to = 100, by = 5))
+mtext(side = 1, line = 2.3, expression('Time in home cluster (%), ' * rho))
+mtext(side = 2, line = 2.3, expression(epsilon * ' needed for observed efficacy'))
+mtext(side = 3, line = 0, adj = 0, 'C', font = 2)
+
+legend('bottomleft', pch = 15, col = palette,
+       legend = c('Mean', '95% CI'), pt.cex = 1.5, bty = 'n', title = expression(underline('Observed AWED Efficacy')))
+
+
+
+rho.vec = seq(0.5,1,by=0.001)
+plot(NA, NA, xlim = c(0.5,1), ylim = c(0,1), axes = F,
+     xaxs = 'i', yaxs = 'i', xlab = '', ylab = '')
+abline(h = seq(from = 0, to = 1, by = 0.2), v = seq(from = 0.5, to = 1, by = 0.1),
+       col = col2alpha('gray', alpha = 0.5), lwd = 1.25, lty = 3)
+polygon(c(rho.vec, rev(rho.vec)), c(efficacy.rho[,1], rev(efficacy.rho[,3])), col = col2alpha(palette[2]), border = NA)
+lines(rho.vec, efficacy.rho[,3], lwd = 1.5, col = palette[2])
+lines(rho.vec, efficacy.rho[,1], lwd = 1.5, col = palette[2])
+lines(rho.vec, efficacy.rho[,2], lwd = 1.5, col = palette[1])
+box()
+axis(side = 1, at = seq(from = 0.5, to = 1, by = 0.1), labels = seq(from = 50, to = 100, by = 10))
+axis(side = 2, las = 1, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from = 0, to = 100, by = 20))
+mtext(side = 1, line = 2.3, expression('Time in home cluster (%), ' * rho))
+mtext(side = 2, line = 2.3, 'Observed efficacy (%)')
+mtext(side = 3, line = 0, adj = 0, 'D', font = 2)
+
+plot(NA, NA, xlim = c(0,1.01), ylim = c(0,1.0), axes = F,
+     xaxs = 'i', yaxs = 'i', xlab = '', ylab = '')
+abline(h = seq(from = 0, to = 1, by = 0.2), v = seq(from = 0, to = 1, by = 0.2),
+       col = col2alpha('gray', alpha = 0.5), lwd = 1.25, lty = 3)
+lines(epsilon.vec, efficacy.epsilon.bestcase, lwd = 1.5, col = '#222222')
+lines(epsilon.vec, efficacy.epsilon.fullmodel, lwd = 1.5, col = palette[1])
+segments(x0 = epsilon.trial, y0 = rep(0,3), y1 = efficacy.trial, lty = 3, col = '#222222', lwd = 1.5)
+segments(x0  = rep(0,3), x1 = epsilon.trial, y0 = efficacy.trial, lty = 3, col = '#222222', lwd = 1.5)
+points(epsilon.trial, efficacy.trial, pch = 22, bg = c(palette[2], palette[1], palette[2]), col = '#222222', cex = 1.5)
+box()
+axis(side = 1, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from = 0, to = 100, by = 20))
+axis(side = 2, las = 1, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from = 0, to = 100, by = 20))
+mtext(side = 1, line = 2.3, expression('Reduction in ' * 'R'[0] * ' (%), ' * epsilon))
+mtext(side = 3, line = 0, adj = 0, 'E', font = 2)
+
+deltafn <- approxfun(x = delta.vec, y = efficacy.delta[1,])
+efficacy.delta.low <- deltafn(1e3)
+deltafn <- approxfun(x = delta.vec, y = efficacy.delta[2,])
+efficacy.delta.mean <- deltafn(1e3)
+deltafn <- approxfun(x = delta.vec, y = efficacy.delta[3,])
+efficacy.delta.high <- deltafn(1e3)
+plot(NA, NA, xlim = c(0,max(delta.vec)), ylim = c(0,1), axes = F,
+     xaxs = 'i', yaxs = 'i', xlab = '', ylab = '')
+abline(h = seq(from = 0, to = 1, by = 0.2), v = seq(from = 0, to = 10000, by = 2000),
+       col = col2alpha('gray', alpha = 0.5), lwd = 1.25, lty = 3)
+polygon(c(delta.vec, rev(delta.vec)), c(efficacy.delta[1,], rev(efficacy.delta[3,])), 
+        col = col2alpha(palette[2]), border = NA)
+lines(delta.vec, efficacy.delta[1,], lwd = 1.5, col = palette[2])
+lines(delta.vec, efficacy.delta[3,], lwd = 1.5, col = palette[2])
+lines(delta.vec, efficacy.delta[2,], lwd = 1.5, col = palette[1])
+segments(x0 = 1000, y0 = 0, y1 = efficacy.delta.mean, lty = 3, col = '#222222', lwd = 1.5)
+segments(x0 = 0, x1 = 1000, y0 = efficacy.delta.mean, lty = 3, col = '#222222', lwd = 1.5)
+box()
+axis(side = 1)
+axis(side = 2, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from = 0, to = 100, by = 20), las = 1)
+mtext(side = 1, line = 2.3, expression('Width of cluster (m), ' * delta))
+mtext(side = 3, line = 0, 'F', adj = 0, font = 2)
+dev.off()
