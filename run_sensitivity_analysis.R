@@ -6,7 +6,7 @@ rm(list = ls())
 
 ## install necessary packages
 if(!require(pacman)){install.packages('pacman'); library(pacman)}
-p_load(pomp,epiR,ggplot2)
+p_load(pomp,epiR,ggplot2,mgcv)
 
 ## load necessary functions
 source('functions_sensitivity_analysis.R')
@@ -30,20 +30,23 @@ sweep.out <- data.frame(eff.bestcase=rep(NA,nseq),eff.mosquito=rep(NA,nseq),
                         eff.human=rep(NA,nseq),eff.suppression=rep(NA,nseq))
 
 ## Sweep and store output
+generate.output = FALSE
 save.output = FALSE
-for (ii in 1:nseq){
+if (generate.output){
+    for (ii in 1:nseq){
     sweep.out[ii,] <- calc_efficacy(age.dist=age.dist,life.expectancy=life.expectancy,
                                     population_structure="exponential",
                                     Ct=sweep.parms[ii,"Ct"],Cc=sweep.parms[ii,"Cc"],
                                     FOI=sweep.parms[ii,"FOI"],epsilon=sweep.parms[ii,"epsilon"],
                                     rho.tt=sweep.parms[ii,"rho.tt"])
+    }
 }
 if(save.output) save(sweep.parms,sweep.out,file="./sweep_output.RData")
 
 ## Calculate bias outputs
 load.output=FALSE
 if (load.output) load("./sweep_output.RData",verbose=TRUE)
-subsample <- sample(1:nrow(sweep.out),nseq,replace=FALSE) # sample to make more manageable
+subsample <- sample(1:nrow(sweep.out),1e4,replace=FALSE) # sample to make more manageable
 sweep.parms <- sweep.parms[subsample,]
 sweep.out <- sweep.out[subsample,]
 sweep.out$bias.mosquito <- 1 - sweep.out$eff.mosquito/sweep.out$eff.bestcase
@@ -101,6 +104,8 @@ dev.off()
 
 ## plot biases
 pdf("bias_mosquito_scatters.pdf")
+gam.out <- gam(bias.mosquito~s(Ct)+s(Cc)+s(FOI)+s(rho.tt)+s(epsilon),
+               data=cbind(sweep.parms,bias.mosquito=sweep.out$bias.mosquito))
 par(mfrow=c(2,2),oma=c(0,0,0,2),mar=0.1+c(5,4,4,0))
 plot(sweep.parms[,"Ct"],sweep.out[,"bias.mosquito"],
      ylab="Bias - mosquito",xlab="Ct",xaxs="i",yaxs="i",bty="n",las=1,pch=20)
