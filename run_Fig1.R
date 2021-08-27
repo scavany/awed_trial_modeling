@@ -147,10 +147,11 @@ b.98 = b.vec[which.min(abs(rho.vec-0.98))]
 
 ## Analysis 4 - what would epsilon have been under these different values of b?
 rho.b.vec = seq(0.8,1,by=0.001)
-epsilon.b.98 = c(epsilon.implied.vec[which.min(abs(
-  efficacy.implied[which.min(
-    abs(rho.implied.vec-rho_tt_checker(100,1e3))),] -
-    efficacy.trial[1]))],
+epsilon.b.98 = c(
+  epsilon.implied.vec[which.min(abs(
+    efficacy.implied[which.min(
+      abs(rho.implied.vec-rho_tt_checker(100,1e3))),] -
+      efficacy.trial[1]))],
   epsilon.implied.vec[which.min(abs(
     efficacy.implied[which.min(
       abs(rho.implied.vec-rho_tt_checker(100,1e3))),] -
