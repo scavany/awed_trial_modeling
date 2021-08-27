@@ -35,7 +35,7 @@ axis(side = 2, las = 1, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from 
 mtext(side = 2, line = 2.3, 'Observed efficacy (%)')
 mtext(side = 3, line = 0, adj = 0, 'A', font = 2)
 
-legend('topleft', pch = 15, pt.cex = 1.5, col = palette,
+legend('bottomright', pch = 15, pt.cex = 1.5, col = palette,
        legend = c('None', 'Mosquito contamination', 'Human movement', 'Pathogen suppression'),
        title = expression(underline('Source of bias')), bty = 'n')
 

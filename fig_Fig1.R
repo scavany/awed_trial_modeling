@@ -5,6 +5,7 @@ setwd('~/Documents/awed_trial_modeling/')
 rm(list = ls())
 
 # install necessary packages
+if(!require(contoureR)){install.packages('contoureR'); library(contoureR)}
 if(!require(seqinr)){install.packages('seqinr'); library(seqinr)}
 
 # load the data 
@@ -12,6 +13,16 @@ load('./fig_1.RData')
 
 palette <- c('#4FA9BB',
              'paleturquoise')
+
+getContourLines(x = efficacy.implied,
+                levels = c(0.653,0.771,0.849))
+efficacy.implied.contour <- expand.grid(x = 1:nrow(efficacy.implied),
+                                        y = 1:ncol(efficacy.implied))
+efficacy.implied.contour$z <- apply(efficacy.implied.contour,1,function(xx){ efficacy.implied[ xx[1],xx[2] ]} )
+efficacy.implied.contour$x <- rho.implied.vec[efficacy.implied.contour$x]
+efficacy.implied.contour$y <- epsilon.implied.vec[efficacy.implied.contour$y]
+
+efficacy.implied.contour.df <- getContourLines(efficacy.implied.contour, levels = c(0.653,0.771,0.849))
 
 # generate plot 
 pdf(file = './fig_1_tmp.pdf', width = 10 * (5/6), height = 5)
@@ -36,23 +47,28 @@ mtext(side = 1, line = 2.3, expression('Scale of human movement (m), ' * italic(
 mtext(side = 2, line = 2.3, expression('Time in home cluster (%), ' * rho))
 mtext(side = 3, line = 0, adj = 0, 'B', font = 2)
 
-plot(NA, NA, xlim = c(0.9,1), ylim = c(0.8,1), axes = F,
+plot(NA, NA, xlim = c(0.75,1), ylim = c(0.5,1), axes = F,
      xaxs = 'i', yaxs = 'i', xlab = '', ylab = '')
-abline(h = seq(from = 0.8, to = 1, by = 0.05),
-       v = seq(from = 0.9, to = 1, by = 0.02),
+abline(h = seq(from = 0.5, to = 1, by = 0.1),
+       v = seq(from = 0.75, to = 1, by = 0.05),
        col = col2alpha('gray', alpha = 0.5), lwd = 1.25, lty = 3)
+polygon(c(1,efficacy.implied.contour.df$x[efficacy.implied.contour.df$z == 0.653],0.75,
+          efficacy.implied.contour.df$x[efficacy.implied.contour.df$z == 0.849]),
+        c(0.5,efficacy.implied.contour.df$y[efficacy.implied.contour.df$z == 0.653],1,
+          efficacy.implied.contour.df$y[efficacy.implied.contour.df$z == 0.849]),
+        col = col2alpha(palette[2]), border = NA)
 contour(rho.implied.vec, epsilon.implied.vec,
-        epsilon.implied.mat,levels = epsilon.implied.trial,
+        efficacy.implied,levels = c(0.653,0.771,0.849),
         lty = 1, lwd = 1.5, add=  T, drawlabels = F,
         col = c(palette[2], palette[1], palette[2]))
 box()
-axis(side = 1, at = seq(from = 0.90, to = 1, by = 0.02), labels = seq(from = 90, to = 100, by = 2))
-axis(side = 2, las = 1, at = seq(from = 0.8, to = 1, by = 0.05), labels = seq(from = 80, to = 100, by = 5))
+axis(side = 1, at = seq(from = 0.75, to = 1, by = 0.05), labels = seq(from = 75, to = 100, by = 5))
+axis(side = 2, las = 1, at = seq(from = 0.5, to = 1, by = 0.1), labels = seq(from = 50, to = 100, by = 10))
 mtext(side = 1, line = 2.3, expression('Time in home cluster (%), ' * rho))
 mtext(side = 2, line = 2.3, expression(epsilon * ' needed for observed efficacy'))
 mtext(side = 3, line = 0, adj = 0, 'C', font = 2)
 
-legend('bottomleft', pch = 15, col = palette,
+legend('topright', pch = 15, col = palette,
        legend = c('Mean', '95% CI'), pt.cex = 1.5, bty = 'n', title = expression(underline('Observed AWED Efficacy')))
 
 
