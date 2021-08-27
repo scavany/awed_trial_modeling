@@ -10,6 +10,7 @@ calc_efficacy <- function(age.dist, # age distribution for Indonesia
                           Cc, # control in control clusters
                           FOI, # force of infection
                           epsilon, # factor reduction in R0 from intevention
+                          R0, # Can either be a positive real number, or the string "estimate"
                           rho.tt, # proportion of time that treated individuals spend in treated clusters
                           rho.cc = rho.tt, # proportion of time that control individuals spend in control clusters (assume equal for checkerboard)
                           inv.cross.im = 0.5, # assumed that the period of heterologous protection is by default 2 yrs
@@ -23,20 +24,27 @@ calc_efficacy <- function(age.dist, # age distribution for Indonesia
   # mean time to first infection from one serotype 
   mean.first.inf <- 1 / FOI 
   
-  # calculate the R0
-  if(population_structure == 'exponential')
-  {
-    R0 <- 1 + (life.expectancy / mean.first.inf)
-  } else if (population_structure == 'rectangular')
-  {
-    R0 <- life.expectancy / mean.first.inf
-  }
-  
   # calculate the fraction initially susceptible
   S0 <- calc.prop.susc.ci(age.dist = age.dist,
                           FOI = FOI,
                           inv.cross.im = inv.cross.im)
-  
+
+  # calculate the R0
+  if (R0 == 'estimate_average_age'){
+    if(population_structure == 'exponential')
+    {
+      R0 <- 1 + (life.expectancy / mean.first.inf)
+    } else if (population_structure == 'rectangular')
+    {
+      R0 <- life.expectancy / mean.first.inf
+    }
+  } else if (R0 == 'estimate_final_size'){
+    R0  <-  FOI / (S0 * (1 - exp(-FOI)))
+  } else if (!is.numeric(R0) | R0 < 0) {
+    stop("R0 should either be a positive real number, or one of the strings 'estimate_final_size' or 'estimate_average_age'")
+  }
+      
+    
   # get the movement parameters
   rho.tc <- 1 - rho.tt
   rho.ct <- 1 - rho.cc
@@ -44,30 +52,38 @@ calc_efficacy <- function(age.dist, # age distribution for Indonesia
   # compute the IARs 
   IAR.t.bestcase <- optim(par = c(0.9), fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0 * (1 - epsilon))}, lower = c(0), upper = c(1), method = 'Brent')$par - (1-S0)
   IAR.c.bestcase <- optim(par = c(0.9), fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0)}, lower = c(0), upper = c(1), method = 'Brent')$par - (1-S0)
-  
+  Sf.t.bestcase <- S0 - IAR.t.bestcase
+  Sf.c.bestcase <- S0 - IAR.c.bestcase
+
   IAR.t.mosquito <- optim(par = c(0.9), fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0 * (1 - Ct * epsilon))}, lower = c(0), upper = c(1), method = 'Brent')$par - (1-S0)
   IAR.c.mosquito <- optim(par = c(0.9), fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0 * (1 - Cc * epsilon))}, lower = c(0), upper = c(1), method = 'Brent')$par - (1-S0)
+  Sf.t.mosquito <- S0 - IAR.t.mosquito
+  Sf.c.mosquito <- S0 - IAR.c.mosquito
   
   IAR.t.human <- IAR.t.mosquito * rho.tt + IAR.c.mosquito * rho.tc
   IAR.c.human <- IAR.c.mosquito * rho.cc + IAR.t.mosquito * rho.ct
+  Sf.t.human <- S0 - IAR.t.human
+  Sf.c.human <- S0 - IAR.c.human
   
   IAR.suppression <- optim(c(0.9,0.9),function(par)
     loss.two(par[1],par[2], rho.tt = rho.tt, rho.tc = rho.tc, rho.cc = rho.cc, rho.ct = rho.ct, Cc = Cc, Ct = Ct, epsilon = epsilon, S0 = S0, R0 = R0),lower=c(0,0),upper=c(1,1),method='BFGS',
     control = list(reltol=1e-12))$par - (1 - S0)
   IAR.t.suppression <- IAR.suppression[1]
   IAR.c.suppression <- IAR.suppression[2]
+  Sf.t.suppression <- S0 - IAR.t.suppression
+  Sf.c.suppression <- S0 - IAR.c.suppression
   
   # calculate efficacy
-  eff.bestcase <- 1 - (IAR.t.bestcase / IAR.c.bestcase)
-  eff.mosquito <- 1 - (IAR.t.mosquito / IAR.c.mosquito)
-  eff.human <- 1 - (IAR.t.human / IAR.c.human)
-  eff.suppression <- 1 - (IAR.t.suppression / IAR.c.suppression)
+  eff.bestcase <- 1 - (IAR.t.bestcase / IAR.c.bestcase) * (Sf.c.bestcase / Sf.t.bestcase)
+  eff.mosquito <- 1 - (IAR.t.mosquito / IAR.c.mosquito) * (Sf.c.mosquito / Sf.t.mosquito)
+  eff.human <- 1 - (IAR.t.human / IAR.c.human) * (Sf.c.human / Sf.t.human)
+  eff.suppression <- 1 - (IAR.t.suppression / IAR.c.suppression) * (Sf.c.suppression / Sf.t.suppression)
   
   # return output 
   return(c(eff.bestcase = eff.bestcase,
-         eff.mosquito = eff.mosquito,
-         eff.human = eff.human,
-         eff.suppression = eff.suppression))
+           eff.mosquito = eff.mosquito,
+           eff.human = eff.human,
+           eff.suppression = eff.suppression))
 }
 
 
