@@ -46,8 +46,8 @@ epsilon.vec = seq(0,1,by=0.005)
 Nt = 1
 delta  = 1e3
 Nc = Nc_checker(delta)
-rho.tt = rho_tt_checker(90,delta)
-rho.cc = rho_cc_checker(90,delta)
+rho.tt = rho_tt_checker(60,delta)
+rho.cc = rho_cc_checker(60,delta)
 rho.tc = 1 - rho.tt
 rho.ct = 1 - rho.cc
 IAR.bestcase = IAR.mosquito = IAR.human = IAR.fullmodel = matrix(0,2,length(epsilon.vec))
