@@ -40,33 +40,36 @@ R0 = (log(Sf) - log(S0)) / (Sf - S0)
 ## Analysis 1 - How does efficacy change with epsilon? ## 
 epsilon.vec = seq(0,1,by=0.005)
 Nt = Nc = 1
-rho.tt = rho.cc = rho_tt_checker(b = 100, d = 1e3)
+rho.tt = rho.cc = rho_tt_checker(b = 90, d = 1e3)
 rho.tc = 1 - rho.tt
 rho.ct = 1 - rho.cc
 efficacy.epsilon.bestcase = numeric(length(epsilon.vec))
 efficacy.epsilon.fullmodel = numeric(length(epsilon.vec))
 for(jj in 1:length(epsilon.vec)){
   epsilon = epsilon.vec[jj]
-  IAR.t.mosquito <- optim(par = c(0.9), fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0 * (1 - 1 * epsilon))}, lower = c(0), upper = c(1), method = 'Brent')$par - (1-S0)
-  IAR.c.mosquito <- optim(par = c(0.9), fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0 * (1 - 0 * epsilon))}, lower = c(0), upper = c(1), method = 'Brent')$par - (1-S0)
-  S.f.t.mosquito <- 1 - (IAR.t.mosquito + (1 - S0))
-  S.f.c.mosquito <- 1 - (IAR.c.mosquito + (1 - S0))
+  IAR.t.mosquito <- ifelse(R0 * (1 - epsilon) != 0, plogis(optim(par = qlogis(S0), fn = function(par){loss.one(pi = plogis(par), S0 = S0, R0 = R0 * (1 - 1 * epsilon))}, lower = qlogis(1e-10), upper = plogis(S0), method = 'Brent')$par), 0)
+  IAR.c.mosquito <- ifelse(R0 != 0, plogis(optim(par = qlogis(S0), fn = function(par){loss.one(pi = plogis(par), S0 = S0, R0 = R0 * (1 - 0 * epsilon))}, lower = qlogis(1e-10), upper = qlogis(S0), method = 'Brent')$par), 0)
+  ## S.f.t.mosquito <- 1 - (IAR.t.mosquito + (1 - S0))
+  ## S.f.c.mosquito <- 1 - (IAR.c.mosquito + (1 - S0))
   
-  efficacy.epsilon.bestcase[jj] = 1 - IAR.t.mosquito / IAR.c.mosquito
-  efficacy.epsilon.bestcase[jj] = 1 - ((IAR.t.mosquito / IAR.c.mosquito) * (S.f.c.mosquito / S.f.t.mosquito))
+  ## efficacy.epsilon.bestcase[jj] = 1 - IAR.t.mosquito / IAR.c.mosquito #ARR
+  ## efficacy.epsilon.bestcase[jj] = 1 - ((IAR.t.mosquito / IAR.c.mosquito) * (S.f.c.mosquito / S.f.t.mosquito)) #OR method 1
+  efficacy.epsilon.bestcase[jj] = 1 - (IAR.t.mosquito / IAR.c.mosquito) * (1 - IAR.c.mosquito) / (1 - IAR.t.mosquito) #OR method 2
   
-  IAR.fullmodel = optim(c(0.9,0.9),function(par)
-    loss.two(par[1],par[2], rho.tt = rho.tt, rho.tc = rho.tc, rho.cc = rho.cc, rho.ct = rho.ct, Cc = Cc, Ct = Ct, epsilon = epsilon, R0 = R0, S0 = S0),lower=c(0,0),upper=c(1,1),method='BFGS',
-    control = list(reltol=1e-12))$par - (1 - S0)
-  S.f.t.fullmodel <- 1 - (IAR.fullmodel[1] + (1-S0))
-  S.f.c.fullmodel <- 1 - (IAR.fullmodel[2] + (1-S0))
+  IAR.fullmodel = plogis(optim(c(S0,S0),function(par)
+      loss.two(plogis(par[1]),plogis(par[2]),
+               rho.tt = rho.tt, rho.tc = rho.tc, rho.cc = rho.cc, rho.ct = rho.ct, Cc = Cc,
+               Ct = Ct, epsilon = epsilon, R0 = R0, S0 = S0))$par) 
+  ## S.f.t.fullmodel <- 1 - (IAR.fullmodel[1] + (1-S0))
+  ## S.f.c.fullmodel <- 1 - (IAR.fullmodel[2] + (1-S0))
   
-  #efficacy.epsilon.fullmodel[jj] = 1 - IAR.fullmodel[1] / IAR.fullmodel[2] 
-  efficacy.epsilon.fullmodel[jj] = 1 - ((IAR.fullmodel[1] / IAR.fullmodel[2]) * (S.f.c.fullmodel / S.f.t.fullmodel))
+  ## efficacy.epsilon.fullmodel[jj] = 1 - IAR.fullmodel[1] / IAR.fullmodel[2] #ARR
+  ## efficacy.epsilon.fullmodel[jj] = 1 - ((IAR.fullmodel[1] / IAR.fullmodel[2]) * (S.f.c.fullmodel / S.f.t.fullmodel)) #OR method 1
+  efficacy.epsilon.fullmodel[jj] = 1 - (IAR.fullmodel[1] / IAR.fullmodel[2]) * (1 - IAR.fullmodel[2]) / (1 - IAR.fullmodel[1]) #OR method 2
 }
 
-plot(epsilon.vec, efficacy.epsilon.bestcase, type = 'l')
-lines(epsilon.vec, efficacy.epsilon.fullmodel, lty = 2)
+plot(epsilon.vec, efficacy.epsilon.bestcase, type = 'l',ylim=c(0,1))
+lines(epsilon.vec, efficacy.epsilon.fullmodel, lty = 2, col = 'green')
 abline(h = c(0.653,0.771,0.849))
 lines(0:1, 0:1, col = 'red')
 
@@ -86,20 +89,20 @@ for(jj in 1:3){
     rho.tt = rho.cc = rho.vec[ii]
     rho.tc = 1 - rho.tt
     rho.ct = 1 - rho.cc
-    
-    #IAR.t.mosquito <- optim(par = c(0.9), fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0 * (1 - Ct * epsilon))}, lower = c(0), upper = c(1), method = 'Brent')$par - (1-S0)
-    #IAR.c.mosquito <- optim(par = c(0.9), fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0 * (1 - Cc * epsilon))}, lower = c(0), upper = c(1), method = 'Brent')$par - (1-S0)
+
+    #IAR.t.mosquito <- ifelse(R0 * (1 - Ct * epsilon) != 0, plogis(optim(par = qlogis(S0), fn = function(par){loss.one(pi = plogis(par), S0 = S0, R0 = R0 * (1 - Ct * epsilon))}, lower = qlogis(1e-10), upper = plogis(S0), method = 'Brent')$par), 0)
+    #IAR.c.mosquito <- ifelse(R0 * (1 - Cc * epsilon) != 0, plogis(optim(par = qlogis(S0), fn = function(par){loss.one(pi = plogis(par), S0 = S0, R0 = R0 * (1 - Cc * epsilon))}, lower = qlogis(1e-10), upper = qlogis(S0), method = 'Brent')$par), 0)
     
     #IAR.t.human <- IAR.t.mosquito * rho.tt + IAR.c.mosquito * rho.tc
     #IAR.c.human <- IAR.c.mosquito * rho.cc + IAR.t.mosquito * rho.ct
     
-    IAR = optim(c(0.9,0.9),function(par)
-      loss.two(par[1],par[2], rho.tt = rho.tt, rho.tc = rho.tc, rho.cc = rho.cc, rho.ct = rho.ct, Cc = Cc, Ct = Ct, epsilon = epsilon, R0 = R0, S0 = S0),lower=c(0,0),upper=c(1,1),method='BFGS',
-      control = list(reltol=1e-12))$par - (1 - S0)
-    S.f.t <- 1 - (IAR[1] + (1-S0))
-    S.f.c <- 1 - (IAR[2] + (1-S0))
-    #efficacy.rho[ii,jj] = 1 - IAR.t.human / IAR.c.human
-    efficacy.rho[ii,jj] = 1 - ((IAR[1] / IAR[2]) * (S.f.c / S.f.t))
+    IAR = plogis(optim(c(S0,S0),function(par)
+      loss.two(plogis(par[1]),plogis(par[2]), rho.tt = rho.tt, rho.tc = rho.tc, rho.cc = rho.cc, rho.ct = rho.ct, Cc = Cc, Ct = Ct, epsilon = epsilon, R0 = R0, S0 = S0))$par)
+    ## S.f.t <- 1 - (IAR[1] + (1-S0))
+    ## S.f.c <- 1 - (IAR[2] + (1-S0))
+    ## efficacy.rho[ii,jj] = 1 - IAR.t.human / IAR.c.human #ARR
+    ## efficacy.rho[ii,jj] = 1 - ((IAR[1] / IAR[2]) * (S.f.c / S.f.t)) #OR method 1
+    efficacy.rho[ii,jj] = 1 - (IAR[1] / IAR[2]) * (1 - IAR[2]) / (1 - IAR[1]) #OR method 2
   }
 }
 
@@ -115,19 +118,19 @@ for(jj in 1:length(epsilon.implied.vec)){
     rho.tc = 1 - rho.tt
     rho.ct = 1 - rho.cc
     
-    #IAR.t.mosquito <- optim(par = c(0.9), fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0 * (1 - Ct * epsilon))}, lower = c(0), upper = c(1), method = 'Brent')$par - (1-S0)
-    #IAR.c.mosquito <- optim(par = c(0.9), fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0 * (1 - Cc * epsilon))}, lower = c(0), upper = c(1), method = 'Brent')$par - (1-S0)
+    #IAR.t.mosquito <- ifelse(R0 * (1 - Ct * epsilon) != 0, plogis(optim(par = qlogis(S0), fn = function(par){loss.one(pi = plogis(par), S0 = S0, R0 = R0 * (1 - Ct * epsilon))}, lower = qlogis(1e-10), upper = plogis(S0), method = 'Brent')$par), 0)
+    #IAR.c.mosquito <- ifelse(R0 * (1 - Cc * epsilon) != 0, plogis(optim(par = qlogis(S0), fn = function(par){loss.one(pi = plogis(par), S0 = S0, R0 = R0 * (1 - Cc * epsilon))}, lower = qlogis(1e-10), upper = qlogis(S0), method = 'Brent')$par), 0)
     
     #IAR.t.human <- IAR.t.mosquito * rho.tt + IAR.c.mosquito * rho.tc
     #IAR.c.human <- IAR.c.mosquito * rho.cc + IAR.t.mosquito * rho.ct
     
-    IAR = optim(c(0.9,0.9),function(par)
-      loss.two(par[1],par[2], rho.tt = rho.tt, rho.tc = rho.tc, rho.cc = rho.cc, rho.ct = rho.ct, Cc = Cc, Ct = Ct, epsilon = epsilon, R0 = R0, S0 = S0),lower=c(0,0),upper=c(1,1),method='BFGS',
-      control = list(reltol=1e-12))$par - (1 - S0)
-    S.f.t <- 1 - (IAR[1] + (1-S0))
-    S.f.c <- 1 - (IAR[2] + (1-S0))
-    #efficacy.implied[ii,jj] = 1 - IAR.t.human / IAR.c.human
-    efficacy.implied[ii,jj] = 1 - ((IAR[1] / IAR[2]) * (S.f.c / S.f.t))
+    IAR = plogis(optim(c(S0,S0),function(par)
+      loss.two(plogis(par[1]),plogis(par[2]), rho.tt = rho.tt, rho.tc = rho.tc, rho.cc = rho.cc, rho.ct = rho.ct, Cc = Cc, Ct = Ct, epsilon = epsilon, R0 = R0, S0 = S0))$par)
+    ## S.f.t <- 1 - (IAR[1] + (1-S0))
+    ## S.f.c <- 1 - (IAR[2] + (1-S0))
+    ## efficacy.implied[ii,jj] = 1 - IAR[1] / IAR[2] #ARR
+    ## efficacy.implied[ii,jj] = 1 - ((IAR[1] / IAR[2]) * (S.f.c / S.f.t)) #OR method 1
+    efficacy.implied[ii,jj] = 1 - (IAR[1] / IAR[2]) * (1 - IAR[2]) / (1 - IAR[1]) #OR method 2
   }
 }
 
@@ -150,15 +153,15 @@ rho.b.vec = seq(0.8,1,by=0.001)
 epsilon.b.98 = c(
   epsilon.implied.vec[which.min(abs(
     efficacy.implied[which.min(
-      abs(rho.implied.vec-rho_tt_checker(100,1e3))),] -
+      abs(rho.implied.vec-rho_tt_checker(90,1e3))),] -
       efficacy.trial[1]))],
   epsilon.implied.vec[which.min(abs(
     efficacy.implied[which.min(
-      abs(rho.implied.vec-rho_tt_checker(100,1e3))),] -
+      abs(rho.implied.vec-rho_tt_checker(90,1e3))),] -
       efficacy.trial[2]))],
   epsilon.implied.vec[which.min(abs(
     efficacy.implied[which.min(
-      abs(rho.implied.vec-rho_tt_checker(100,1e3))),] -
+      abs(rho.implied.vec-rho_tt_checker(90,1e3))),] -
       efficacy.trial[3]))])
 
 epsilon.b.90 = c(epsilon.implied.vec[which.min(abs(
@@ -176,7 +179,7 @@ epsilon.b.90 = c(epsilon.implied.vec[which.min(abs(
 
 ## Analysis 4 - what if the dimensions of the checkerboard were bigger or smaller?
 epsilon.delta.vec = epsilon.trial
-b.delta.vec = 100
+b.delta.vec = 90
 delta.vec = seq(1e2,1e4,length.out=200)
 efficacy.delta = matrix(0,3,length(delta.vec))
 for(ii in 1:length(epsilon.delta.vec)){
@@ -188,21 +191,21 @@ for(ii in 1:length(epsilon.delta.vec)){
     rho.tc = 1 - rho.tt
     rho.ct = 1 - rho.cc
 
-    #IAR.t.mosquito <- optim(par = c(0.9), fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0 * (1 - Ct * epsilon))}, lower = c(0), upper = c(1), method = 'Brent')$par - (1-S0)
-    #IAR.c.mosquito <- optim(par = c(0.9), fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0 * (1 - Cc * epsilon))}, lower = c(0), upper = c(1), method = 'Brent')$par - (1-S0)
+    #IAR.t.mosquito <- ifelse(R0 * (1 - Ct * epsilon) != 0, plogis(optim(par = qlogis(S0), fn = function(par){loss.one(pi = plogis(par), S0 = S0, R0 = R0 * (1 - Ct * epsilon))}, lower = qlogis(1e-10), upper = plogis(S0), method = 'Brent')$par), 0)
+    #IAR.c.mosquito <- ifelse(R0 * (1 - Cc * epsilon) != 0, plogis(optim(par = qlogis(S0), fn = function(par){loss.one(pi = plogis(par), S0 = S0, R0 = R0 * (1 - Cc * epsilon))}, lower = qlogis(1e-10), upper = qlogis(S0), method = 'Brent')$par), 0)
     
     #IAR.t.human <- IAR.t.mosquito * rho.tt + IAR.c.mosquito * rho.tc
     #IAR.c.human <- IAR.c.mosquito * rho.cc + IAR.t.mosquito * rho.ct
     
-    IAR = optim(c(0.9,0.9),function(par)
-      loss.two(par[1],par[2], rho.tt = rho.tt, rho.tc = rho.tc, rho.cc = rho.cc, rho.ct = rho.ct, Cc = Cc, Ct = Ct, epsilon = epsilon, R0 = R0, S0 = S0),lower=c(0,0),upper=c(1,1),method='BFGS',
-      control = list(reltol=1e-12))$par - (1 - S0)
+    IAR = plogis(optim(c(S0,S0),function(par)
+      loss.two(plogis(par[1]),plogis(par[2]), rho.tt = rho.tt, rho.tc = rho.tc, rho.cc = rho.cc, rho.ct = rho.ct, Cc = Cc, Ct = Ct, epsilon = epsilon, R0 = R0, S0 = S0))$par)
     
-    S.f.t <- 1 - (IAR[1] + (1-S0))
-    S.f.c <- 1 - (IAR[2] + (1-S0))
+    ## S.f.t <- 1 - (IAR[1] + (1-S0))
+    ## S.f.c <- 1 - (IAR[2] + (1-S0))
     
-    #efficacy.delta[ii,jj] = 1 - (IAR.t.human / IAR.c.human)
-    efficacy.delta[ii,jj] = 1 - ((IAR[1] / IAR[2]) * (S.f.c / S.f.t))
+    ## efficacy.delta[ii,jj] = 1 - (IAR.t.human / IAR.c.human) #ARR
+    ## efficacy.delta[ii,jj] = 1 - ((IAR[1] / IAR[2]) * (S.f.c / S.f.t)) #OR method 1
+    efficacy.delta[ii,jj] = 1 - (IAR[1] / IAR[2]) * (1 - IAR[2]) / (1 - IAR[1]) #OR method 2
   }
 }
 

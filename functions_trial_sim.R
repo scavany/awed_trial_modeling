@@ -1,13 +1,26 @@
 # loss functions for estimating IAR in one or two patch scenarios
 # https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3506030/
+## Miller versions
+## loss.one = function(pi, S0, R0){
+##   abs(pi - 1 + S0 * exp(-R0 * pi))
+## }
+## loss.two = function(pi.t, pi.c, rho.tt, rho.tc, rho.cc, rho.ct, Ct, Cc, epsilon, S0, R0){
+##   abs(pi.t - 1 + S0 * exp(-(
+##     pi.t * rho.tt * (1 - Ct * epsilon) * R0 +
+##     pi.c * rho.tc * (1 - Cc * epsilon) * R0))) ^ 2 +
+##   abs(pi.c - 1 + S0 * exp(-(
+##     pi.t * rho.ct * (1 - Ct * epsilon) * R0 +
+##     pi.c * rho.cc * (1 - Cc * epsilon) * R0))) ^ 2
+## }
+## Quan versions
 loss.one = function(pi, S0, R0){
-  abs(pi - 1 + S0 * exp(-R0 * pi))
+  abs(1 - S0 / pi + S0 * exp(-R0 * pi) / pi)
 }
 loss.two = function(pi.t, pi.c, rho.tt, rho.tc, rho.cc, rho.ct, Ct, Cc, epsilon, S0, R0){
-  abs(pi.t - 1 + S0 * exp(-(
+  abs(1 - S0 / pi.t + S0 / pi.t * exp(-(
     pi.t * rho.tt * (1 - Ct * epsilon) * R0 +
     pi.c * rho.tc * (1 - Cc * epsilon) * R0))) ^ 2 +
-  abs(pi.c - 1 + S0 * exp(-(
+  abs(1 - S0 / pi.c + S0 / pi.c * exp(-(
     pi.t * rho.ct * (1 - Ct * epsilon) * R0 +
     pi.c * rho.cc * (1 - Cc * epsilon) * R0))) ^ 2
 }

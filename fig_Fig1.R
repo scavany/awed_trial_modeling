@@ -5,7 +5,7 @@ setwd('~/Documents/awed_trial_modeling/')
 rm(list = ls())
 
 # install necessary packages
-if(!require(contoureR)){install.packages('contoureR'); library(contoureR)}
+if(!require(pacman)){install.packages('pacman'); library(pacman)}
 p_load(seqinr, contoureR, imager)
 
 # load the data 
@@ -24,7 +24,7 @@ efficacy.implied.contour.df <- getContourLines(efficacy.implied.contour, levels 
 
 # generate plot 
 ##pdf(file = './fig_1.pdf', width = 10 * (5/6), height = 5)
-png(file = './fig_1.png', width = 10 * (5/6), height = 5,units="in",res=1200)
+jpeg(filename = './fig_1.jpg', width = 10 * (5/6), height = 5,units="in",res=1000)
 layout(mat = matrix(1:6, nrow = 2, byrow = T))
 par(mar = c(3.3,3.6,1.3,1.2))
 checkerboard.im <- load.image("./checkerboard_diagram.png")

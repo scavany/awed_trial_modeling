@@ -78,6 +78,11 @@ calc_efficacy <- function(age.dist, # age distribution for Indonesia
   eff.mosquito <- 1 - (IAR.t.mosquito / IAR.c.mosquito) * (Sf.c.mosquito / Sf.t.mosquito)
   eff.human <- 1 - (IAR.t.human / IAR.c.human) * (Sf.c.human / Sf.t.human)
   eff.suppression <- 1 - (IAR.t.suppression / IAR.c.suppression) * (Sf.c.suppression / Sf.t.suppression)
+  eff.bestcase <- 1 - (IAR.t.bestcase / IAR.c.bestcase) * (1 - IAR.c.bestcase) / (1 - IAR.t.bestcase)
+  eff.mosquito <- 1 - (IAR.t.mosquito / IAR.c.mosquito) * (1 - IAR.c.mosquito) / (1 - IAR.t.mosquito)
+  eff.human <- 1 - (IAR.t.human / IAR.c.human) * (1 - IAR.c.human) / (1 - IAR.t.human)
+  eff.suppression <- 1 - (IAR.t.suppression / IAR.c.suppression) * (1 - IAR.c.suppression) / (1 - IAR.t.suppression)
+
   
   # return output 
   return(c(eff.bestcase = eff.bestcase,

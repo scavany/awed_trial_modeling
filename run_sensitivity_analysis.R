@@ -5,8 +5,8 @@ setwd('~/Documents/awed_trial_modeling')
 rm(list = ls())
 
 ## regenerate output, or use old version?
-generate.output = FALSE
-save.output = FALSE
+generate.output = TRUE
+save.output = TRUE
 load.output=TRUE
 
 
