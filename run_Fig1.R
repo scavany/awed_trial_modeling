@@ -35,12 +35,12 @@ S0 = calc.prop.susc.ci(age.dist = age.dist,
 # calculate R0 
 #R0 <- 1 + life.expectancy * FOI
 Sf = S0 * exp(-FOI)
-R0 = (log(Sf) - log(S0)) / (Sf - S0)
+R0 = 3.5 #(log(Sf) - log(S0)) / (Sf - S0)
 
 ## Analysis 1 - How does efficacy change with epsilon? ## 
 epsilon.vec = seq(0,1,by=0.005)
 Nt = Nc = 1
-rho.tt = rho.cc = rho_tt_checker(b = 90, d = 1e3)
+rho.tt = rho.cc = rho_tt_checker(b = 60, d = 1e3)
 rho.tc = 1 - rho.tt
 rho.ct = 1 - rho.cc
 efficacy.epsilon.bestcase = numeric(length(epsilon.vec))
@@ -153,15 +153,15 @@ rho.b.vec = seq(0.8,1,by=0.001)
 epsilon.b.98 = c(
   epsilon.implied.vec[which.min(abs(
     efficacy.implied[which.min(
-      abs(rho.implied.vec-rho_tt_checker(90,1e3))),] -
+      abs(rho.implied.vec-rho_tt_checker(60,1e3))),] -
       efficacy.trial[1]))],
   epsilon.implied.vec[which.min(abs(
     efficacy.implied[which.min(
-      abs(rho.implied.vec-rho_tt_checker(90,1e3))),] -
+      abs(rho.implied.vec-rho_tt_checker(60,1e3))),] -
       efficacy.trial[2]))],
   epsilon.implied.vec[which.min(abs(
     efficacy.implied[which.min(
-      abs(rho.implied.vec-rho_tt_checker(90,1e3))),] -
+      abs(rho.implied.vec-rho_tt_checker(60,1e3))),] -
       efficacy.trial[3]))])
 
 epsilon.b.90 = c(epsilon.implied.vec[which.min(abs(
@@ -179,7 +179,7 @@ epsilon.b.90 = c(epsilon.implied.vec[which.min(abs(
 
 ## Analysis 4 - what if the dimensions of the checkerboard were bigger or smaller?
 epsilon.delta.vec = epsilon.trial
-b.delta.vec = 90
+b.delta.vec = 60
 delta.vec = seq(1e2,1e4,length.out=200)
 efficacy.delta = matrix(0,3,length(delta.vec))
 for(ii in 1:length(epsilon.delta.vec)){

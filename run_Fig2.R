@@ -35,7 +35,7 @@ S0 = calc.prop.susc.ci(age.dist = age.dist,
 # calculate R0 
 #R0 <- 1 + life.expectancy * FOI
 Sf = S0 * exp(-FOI)
-R0 = (log(Sf) - log(S0)) / (Sf - S0)
+R0 = 3.5#(log(Sf) - log(S0)) / (Sf - S0)
 
 # look at effect on IAR 
 rho.vec = seq(0.8,1,by=0.001)
