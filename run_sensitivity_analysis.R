@@ -12,7 +12,7 @@ load.output=TRUE
 
 ## install necessary packages
 if(!require(pacman)){install.packages('pacman'); library(pacman)}
-p_load(pomp,epiR,ggplot2,mgcv)
+p_load(pomp,epiR,ggplot2)
 
 ## load necessary functions
 source('functions_sensitivity_analysis.R')
@@ -32,7 +32,7 @@ nseq <- 1e5
 Ct.range <- c(0.5,1); Ct.baseline <- 0.950
 Cc.range <- c(0,0.5); Cc.baseline <- 0.170
 FOI.range <- c(0,0.06); FOI.baseline <- 0.0318
-R0.range <- c(2.33/2,2.33*2); R0.baseline = 2.330239
+R0.range <- c(3.5/1.5,3.5*1.5); R0.baseline = 3.5#2.330239
 epsilon.range <- c(0,1); epsilon.baseline <- 0.849
 rho.tt.range <- c(0.5,1); rho.tt.baseline <- 0.820
 
@@ -66,7 +66,7 @@ sweep.out$bias.human <- 1 - sweep.out$eff.human/sweep.out$eff.bestcase
 sweep.out$bias.suppression <- 1 - sweep.out$eff.suppression/sweep.out$eff.bestcase
 
 ## plot efficacies
-png("efficacy_bestcase_scatters.png")
+png("efficacy_bestcase_scatters.png",width=480*1.5,height=480*1.5)
 par(mfrow=c(3,2),oma=c(0,0,0,2),mar=0.1+c(5,4,4,0))
 plot(sweep.parms[,"Ct"],sweep.out[,"eff.bestcase"],
      ylab="Efficacy - bestcase",xlab="Ct",xaxs="i",yaxs="i",bty="n",las=1,pch=20)
@@ -82,7 +82,7 @@ plot(sweep.parms[,"epsilon"],sweep.out[,"eff.bestcase"],
      ylab="",xlab="epsilon",xaxs="i",yaxs="i",bty="n",las=1,pch=20)
 dev.off()
 
-png("efficacy_mosquito_scatters.png")
+png("efficacy_mosquito_scatters.png",width=480*1.5,height=480*1.5)
 par(mfrow=c(3,2),oma=c(0,0,0,2),mar=0.1+c(5,4,4,0))
 plot(sweep.parms[,"Ct"],sweep.out[,"eff.mosquito"],
      ylab="Efficacy - mosquito",xlab="Ct",xaxs="i",yaxs="i",bty="n",las=1,pch=20)
@@ -98,7 +98,7 @@ plot(sweep.parms[,"epsilon"],sweep.out[,"eff.mosquito"],
      ylab="",xlab="epsilon",xaxs="i",yaxs="i",bty="n",las=1,pch=20)
 dev.off()
 
-png("efficacy_human_scatters.png")
+png("efficacy_human_scatters.png",width=480*1.5,height=480*1.5)
 par(mfrow=c(3,2),oma=c(0,0,0,2),mar=0.1+c(5,4,4,0))
 plot(sweep.parms[,"Ct"],sweep.out[,"eff.human"],
      ylab="Efficacy - human",xlab="Ct",xaxs="i",yaxs="i",bty="n",las=1,pch=20)
@@ -114,7 +114,7 @@ plot(sweep.parms[,"epsilon"],sweep.out[,"eff.human"],
      ylab="",xlab="epsilon",xaxs="i",yaxs="i",bty="n",las=1,pch=20)
 dev.off()
 
-png("efficacy_suppression_scatters.png")
+png("efficacy_suppression_scatters.png",width=480*1.5,height=480*1.5)
 par(mfrow=c(3,2),oma=c(0,0,0,2),mar=0.1+c(5,4,4,0))
 plot(sweep.parms[,"Ct"],sweep.out[,"eff.suppression"],
      ylab="Efficacy - suppression",xlab="Ct",xaxs="i",yaxs="i",bty="n",las=1,pch=20)
@@ -135,7 +135,7 @@ dev.off()
 nplot <- 101
 Ct.plotrange <- seq(Ct.range[1],Ct.range[2],length.out=nplot)
 Cc.plotrange <- seq(Cc.range[1],Cc.range[2],length.out=nplot)
-FOI.plotrange <- seq(FOI.range[1],FOI.range[2],length.out=nplot)
+FOI.plotrange <- seq(FOI.range[1]+1e-10,FOI.range[2],length.out=nplot)
 rho.tt.plotrange <- seq(rho.tt.range[1],rho.tt.range[2],length.out=nplot)
 R0.plotrange <- seq(R0.range[1],R0.range[2],length.out=nplot)
 epsilon.plotrange <- seq(epsilon.range[1],epsilon.range[2],length.out=nplot)
@@ -145,6 +145,7 @@ efficacy.Cc <- efficacy.Ct; efficacy.rho.tt <- efficacy.Ct; efficacy.FOI <- effi
 efficacy.R0 <- efficacy.Ct; efficacy.epsilon <- efficacy.Ct
 
 for (ii in 1:nplot) {
+    ## print(ii)
     efficacy.Ct[ii,] <- calc_efficacy(age.dist=age.dist,life.expectancy=life.expectancy,
                                      population_structure="exponential",
                                      Ct=Ct.plotrange[ii],Cc=Cc.baseline,
@@ -178,7 +179,7 @@ for (ii in 1:nplot) {
 }
 
 ## plot scatters with one-at-a-time overlaid
-png("bias_mosquito_scatters.png")
+png("bias_mosquito_scatters.png",width=480*1.5,height=480*1.5)
 par(mfrow=c(3,2),oma=c(0,0,0,2),mar=0.1+c(5,4,4,0))
 plot(sweep.parms[,"Ct"],sweep.out[,"bias.mosquito"],
      ylab="Bias - mosquito",xlab="Ct",xlim=Ct.range,yaxs="i",bty="n",las=1,pch=20,ylim=c(0,1))
@@ -218,7 +219,7 @@ lines(epsilon.plotrange,
 abline(v=epsilon.baseline,lty="dashed",col="red",lwd=2)
 dev.off()
 
-png("bias_human_scatters.png")
+png("bias_human_scatters.png",width=480*1.5,height=480*1.5)
 par(mfrow=c(3,2),oma=c(0,0,0,2),mar=0.1+c(5,4,4,0))
 plot(sweep.parms[,"Ct"],sweep.out[,"bias.human"],
      ylab="Bias - human",xlab="Ct",xlim=Ct.range,yaxs="i",bty="n",las=1,pch=20,ylim=c(0,1))
@@ -258,7 +259,7 @@ lines(epsilon.plotrange,
 abline(v=epsilon.baseline,lty="dashed",col="red",lwd=2)
 dev.off()
 
-png("bias_suppression_scatters.png")
+png("bias_suppression_scatters.png",width=480*1.5,height=480*1.5)
 par(mfrow=c(3,2),oma=c(0,0,0,2),mar=0.1+c(5,4,4,0))
 plot(sweep.parms[,"Ct"],sweep.out[,"bias.suppression"],
      ylab="Bias - suppression",xlab="Ct",xlim=Ct.range,yaxs="i",bty="n",las=1,pch=20,ylim=c(0,1))
@@ -300,21 +301,21 @@ dev.off()
 
 
 ## GAM Plots - no longer using
-## png("bias_mosquito_gam.png")
+## png("bias_mosquito_gam.png",width=480*1.5,height=480*1.5)
 ## gam.out <- gam(qlogis(bias.mosquito)~s(Ct)+s(Cc)+s(FOI)+s(rho.tt)+s(epsilon)+s(R0),
 ##                data=cbind(sweep.parms,bias.mosquito=sweep.out$bias.mosquito))
 ## plot(gam.out, pages=1, rug=FALSE, lwd=3, residuals=TRUE, shift=coef(gam.out)[1],
 ##      trans = plogis)
 ## dev.off()
 
-## png("bias_human_gam.png")
+## png("bias_human_gam.png",width=480*1.5,height=480*1.5)
 ## gam.out <- gam(qlogis(bias.human)~s(Ct)+s(Cc)+s(FOI)+s(rho.tt)+s(epsilon)+s(R0),
 ##                data=cbind(sweep.parms,bias.human=sweep.out$bias.human))
 ## plot(gam.out, pages=1, rug=FALSE, lwd=3, residuals=TRUE, shift=coef(gam.out)[1],
 ##      trans = plogis)
 ## dev.off()
 
-## png("bias_suppression_gam.png")
+## png("bias_suppression_gam.png",width=480*1.5,height=480*1.5)
 ## gam.out <- gam(qlogis(bias.suppression)~s(Ct)+s(Cc)+s(FOI)+s(rho.tt)+s(epsilon)+s(R0),
 ##                data=cbind(sweep.parms,bias.suppression=sweep.out$bias.suppression))
 ## plot(gam.out, pages=1, rug=FALSE, lwd=3, residuals=TRUE, shift=coef(gam.out)[1],
@@ -330,7 +331,7 @@ prcc.suppression <- cbind(var.names=names(sweep.parms),index=1:ncol(sweep.parms)
                           epi.prcc(cbind(sweep.parms,sweep.out$bias.suppression)))
 
 ## Plot PRCC
-png("prcc_mosquito_forest.png")
+png("prcc_mosquito_forest.png",width=480*1.5,height=480*1.5)
 ggplot(data=prcc.mosquito, aes(y=index, x=est, xmin=est, xmax=est)) +
   geom_point() + 
   geom_errorbarh(height=.1) +
@@ -340,7 +341,7 @@ ggplot(data=prcc.mosquito, aes(y=index, x=est, xmin=est, xmax=est)) +
   theme_classic()
 dev.off()
 
-png("prcc_human_forest.png")
+png("prcc_human_forest.png",width=480*1.5,height=480*1.5)
 ggplot(data=prcc.human, aes(y=index, x=est, xmin=est, xmax=est)) +
   geom_point() + 
   geom_errorbarh(height=.1) +
@@ -350,7 +351,7 @@ ggplot(data=prcc.human, aes(y=index, x=est, xmin=est, xmax=est)) +
   theme_classic()
 dev.off()
 
-png("prcc_suppression_forest.png")
+png("prcc_suppression_forest.png",width=480*1.5,height=480*1.5)
 ggplot(data=prcc.suppression, aes(y=index, x=est, xmin=est, xmax=est)) +
   geom_point() + 
   geom_errorbarh(height=.1) +
@@ -363,7 +364,7 @@ dev.off()
 
 ### Sensitivity analysis of proportion attributable to transmission
 
-png("prop_suppression_scatters.png")
+png("prop_suppression_scatters.png",width=480*1.5,height=480*1.5)
 par(mfrow=c(3,2),oma=c(0,0,0,2),mar=0.1+c(5,4,4,0))
 plot(sweep.parms[,"Ct"], 1 - sweep.out[,"bias.human"]/sweep.out[,"bias.suppression"],
      ylab="Proportion of bias due to suppression",xlab="Ct",xlim=Ct.range,yaxs="i",bty="n",las=1,pch=20,ylim=c(-1,1))
@@ -407,7 +408,7 @@ dev.off()
 prcc.prop.suppression <- cbind(var.names=names(sweep.parms),index=1:ncol(sweep.parms),
                                epi.prcc(cbind(sweep.parms,1 - sweep.out[,"bias.human"]/sweep.out[,"bias.suppression"])))
 
-png("prcc_prop_suppression_forest.png")
+png("prcc_prop_suppression_forest.png",width=480*1.5,height=480*1.5)
 ggplot(data=prcc.prop.suppression, aes(y=index, x=est, xmin=est, xmax=est)) +
   geom_point() + 
   geom_errorbarh(height=.1) +

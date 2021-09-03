@@ -31,6 +31,7 @@ inv.cross.im <- 0.5
 S0 = calc.prop.susc.ci(age.dist = age.dist,
                        FOI = FOI,
                        inv.cross.im = inv.cross.im)
+# S0 = 1 - 1e-7 #slightly less than 1 or optim solver breaks
 
 # calculate R0 
 #R0 <- 1 + life.expectancy * FOI
@@ -47,8 +48,10 @@ efficacy.epsilon.bestcase = numeric(length(epsilon.vec))
 efficacy.epsilon.fullmodel = numeric(length(epsilon.vec))
 for(jj in 1:length(epsilon.vec)){
   epsilon = epsilon.vec[jj]
-  IAR.t.mosquito <- ifelse(R0 * (1 - epsilon) != 0, plogis(optim(par = qlogis(S0), fn = function(par){loss.one(pi = plogis(par), S0 = S0, R0 = R0 * (1 - 1 * epsilon))}, lower = qlogis(1e-10), upper = plogis(S0), method = 'Brent')$par), 0)
-  IAR.c.mosquito <- ifelse(R0 != 0, plogis(optim(par = qlogis(S0), fn = function(par){loss.one(pi = plogis(par), S0 = S0, R0 = R0 * (1 - 0 * epsilon))}, lower = qlogis(1e-10), upper = qlogis(S0), method = 'Brent')$par), 0)
+  ## Note that the lower bound is set as the TP of the loss function, as solution must be above this
+  ## Note also that if R * S0 <= 1, the only solution is pi = 0, so we don't solve in that case
+  IAR.t.mosquito <- ifelse(R0 * (1 - epsilon) * S0 > 1, optim(par = S0, fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0 * (1 - 1 * epsilon))}, lower = log(R0 * (1 - epsilon) * S0) / R0 / (1 - epsilon), upper = S0, method = 'Brent')$par, 0)
+  IAR.c.mosquito <- ifelse(R0 * S0 > 1, optim(par = S0, fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0 * (1 - 0 * epsilon))}, lower = log(R0 * S0) / R0, upper = S0, method = 'Brent')$par, 0)
   ## S.f.t.mosquito <- 1 - (IAR.t.mosquito + (1 - S0))
   ## S.f.c.mosquito <- 1 - (IAR.c.mosquito + (1 - S0))
   
@@ -56,10 +59,10 @@ for(jj in 1:length(epsilon.vec)){
   ## efficacy.epsilon.bestcase[jj] = 1 - ((IAR.t.mosquito / IAR.c.mosquito) * (S.f.c.mosquito / S.f.t.mosquito)) #OR method 1
   efficacy.epsilon.bestcase[jj] = 1 - (IAR.t.mosquito / IAR.c.mosquito) * (1 - IAR.c.mosquito) / (1 - IAR.t.mosquito) #OR method 2
   
-  IAR.fullmodel = plogis(optim(c(S0,S0),function(par)
-      loss.two(plogis(par[1]),plogis(par[2]),
+  IAR.fullmodel = optim(c(S0,S0),function(par)
+      loss.two(par[1],par[2],
                rho.tt = rho.tt, rho.tc = rho.tc, rho.cc = rho.cc, rho.ct = rho.ct, Cc = Cc,
-               Ct = Ct, epsilon = epsilon, R0 = R0, S0 = S0))$par) 
+               Ct = Ct, epsilon = epsilon, R0 = R0, S0 = S0))$par
   ## S.f.t.fullmodel <- 1 - (IAR.fullmodel[1] + (1-S0))
   ## S.f.c.fullmodel <- 1 - (IAR.fullmodel[2] + (1-S0))
   
@@ -90,13 +93,13 @@ for(jj in 1:3){
     rho.tc = 1 - rho.tt
     rho.ct = 1 - rho.cc
 
-    #IAR.t.mosquito <- ifelse(R0 * (1 - Ct * epsilon) != 0, plogis(optim(par = qlogis(S0), fn = function(par){loss.one(pi = plogis(par), S0 = S0, R0 = R0 * (1 - Ct * epsilon))}, lower = qlogis(1e-10), upper = plogis(S0), method = 'Brent')$par), 0)
-    #IAR.c.mosquito <- ifelse(R0 * (1 - Cc * epsilon) != 0, plogis(optim(par = qlogis(S0), fn = function(par){loss.one(pi = plogis(par), S0 = S0, R0 = R0 * (1 - Cc * epsilon))}, lower = qlogis(1e-10), upper = qlogis(S0), method = 'Brent')$par), 0)
+    #IAR.t.mosquito <- ifelse(R0 * (1 - Ct * epsilon) * S0 > 1, optim(par = S0, fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0 * (1 - Ct * epsilon))}, lower = log(R0 * S0 * (1 - Ct * epsilon)) / R0 / (1 - Ct * epsilon), upper = S0, method = 'Brent')$par, 0)
+    #IAR.c.mosquito <- ifelse(R0 * (1 - Cc * epsilon) * S0 > 1, optim(par = S0, fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0 * (1 - Cc * epsilon))}, lower = log(R0 * S0 * (1 - Cc * epsilon)) / R0 / (1 - Cc * epsilon), upper = S0, method = 'Brent')$par, 0)
     
     #IAR.t.human <- IAR.t.mosquito * rho.tt + IAR.c.mosquito * rho.tc
     #IAR.c.human <- IAR.c.mosquito * rho.cc + IAR.t.mosquito * rho.ct
     
-    IAR = plogis(optim(c(S0,S0),function(par)
+    IAR = plogis(optim(qlogis(c(S0,S0)),function(par)
       loss.two(plogis(par[1]),plogis(par[2]), rho.tt = rho.tt, rho.tc = rho.tc, rho.cc = rho.cc, rho.ct = rho.ct, Cc = Cc, Ct = Ct, epsilon = epsilon, R0 = R0, S0 = S0))$par)
     ## S.f.t <- 1 - (IAR[1] + (1-S0))
     ## S.f.c <- 1 - (IAR[2] + (1-S0))
@@ -118,13 +121,13 @@ for(jj in 1:length(epsilon.implied.vec)){
     rho.tc = 1 - rho.tt
     rho.ct = 1 - rho.cc
     
-    #IAR.t.mosquito <- ifelse(R0 * (1 - Ct * epsilon) != 0, plogis(optim(par = qlogis(S0), fn = function(par){loss.one(pi = plogis(par), S0 = S0, R0 = R0 * (1 - Ct * epsilon))}, lower = qlogis(1e-10), upper = plogis(S0), method = 'Brent')$par), 0)
-    #IAR.c.mosquito <- ifelse(R0 * (1 - Cc * epsilon) != 0, plogis(optim(par = qlogis(S0), fn = function(par){loss.one(pi = plogis(par), S0 = S0, R0 = R0 * (1 - Cc * epsilon))}, lower = qlogis(1e-10), upper = qlogis(S0), method = 'Brent')$par), 0)
+    #IAR.t.mosquito <- ifelse(R0 * (1 - Ct * epsilon) * S0 > 1, optim(par = S0, fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0 * (1 - Ct * epsilon))}, lower = log(R0 * S0 * (1 - Ct * epsilon)) / R0 / (1 - Ct * epsilon), upper = S0, method = 'Brent')$par, 0)
+    #IAR.c.mosquito <- ifelse(R0 * (1 - Cc * epsilon) * S0 > 1, optim(par = S0, fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0 * (1 - Cc * epsilon))}, lower = log(R0 * S0 * (1 - Cc * epsilon)) / R0 / (1 - Cc * epsilon), upper = S0, method = 'Brent')$par, 0)
     
     #IAR.t.human <- IAR.t.mosquito * rho.tt + IAR.c.mosquito * rho.tc
     #IAR.c.human <- IAR.c.mosquito * rho.cc + IAR.t.mosquito * rho.ct
     
-    IAR = plogis(optim(c(S0,S0),function(par)
+    IAR = plogis(optim(qlogis(c(S0,S0)),function(par)
       loss.two(plogis(par[1]),plogis(par[2]), rho.tt = rho.tt, rho.tc = rho.tc, rho.cc = rho.cc, rho.ct = rho.ct, Cc = Cc, Ct = Ct, epsilon = epsilon, R0 = R0, S0 = S0))$par)
     ## S.f.t <- 1 - (IAR[1] + (1-S0))
     ## S.f.c <- 1 - (IAR[2] + (1-S0))
@@ -191,13 +194,13 @@ for(ii in 1:length(epsilon.delta.vec)){
     rho.tc = 1 - rho.tt
     rho.ct = 1 - rho.cc
 
-    #IAR.t.mosquito <- ifelse(R0 * (1 - Ct * epsilon) != 0, plogis(optim(par = qlogis(S0), fn = function(par){loss.one(pi = plogis(par), S0 = S0, R0 = R0 * (1 - Ct * epsilon))}, lower = qlogis(1e-10), upper = plogis(S0), method = 'Brent')$par), 0)
-    #IAR.c.mosquito <- ifelse(R0 * (1 - Cc * epsilon) != 0, plogis(optim(par = qlogis(S0), fn = function(par){loss.one(pi = plogis(par), S0 = S0, R0 = R0 * (1 - Cc * epsilon))}, lower = qlogis(1e-10), upper = qlogis(S0), method = 'Brent')$par), 0)
-    
+    #IAR.t.mosquito <- ifelse(R0 * (1 - Ct * epsilon) * S0 > 1, optim(par = S0, fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0 * (1 - Ct * epsilon))}, lower = log(R0 * S0 * (1 - Ct * epsilon)) / R0 / (1 - Ct * epsilon), upper = S0, method = 'Brent')$par, 0)
+    #IAR.c.mosquito <- ifelse(R0 * (1 - Cc * epsilon) * S0 > 1, optim(par = S0, fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0 * (1 - Cc * epsilon))}, lower = log(R0 * S0 * (1 - Cc * epsilon)) / R0 / (1 - Cc * epsilon), upper = S0, method = 'Brent')$par, 0)    
+
     #IAR.t.human <- IAR.t.mosquito * rho.tt + IAR.c.mosquito * rho.tc
     #IAR.c.human <- IAR.c.mosquito * rho.cc + IAR.t.mosquito * rho.ct
     
-    IAR = plogis(optim(c(S0,S0),function(par)
+    IAR = plogis(optim(qlogis(c(S0,S0)),function(par)
       loss.two(plogis(par[1]),plogis(par[2]), rho.tt = rho.tt, rho.tc = rho.tc, rho.cc = rho.cc, rho.ct = rho.ct, Cc = Cc, Ct = Ct, epsilon = epsilon, R0 = R0, S0 = S0))$par)
     
     ## S.f.t <- 1 - (IAR[1] + (1-S0))

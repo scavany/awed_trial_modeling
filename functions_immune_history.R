@@ -57,6 +57,15 @@ prop.exposed.model.ci <- function(t, x, params)
 }
 
 # function to calculate the proportion susceptible with cross-immunity
+calc.prop.susc.noci <- function(age.dist, FOI)
+{
+  seroprob.noci <- ode(c(1,rep(0,4)),age.dist[,1], prop.exposed.model.noci,parms=c(FOI))
+  prop.by.age <- age.dist[,2] / sum(age.dist[,2])
+  prop.susc.noci <- sum(seroprob.noci[,2] * prop.by.age) + (3/4) * sum(seroprob.noci[,3] * prop.by.age) + (2/4) * sum(seroprob.noci[,4] * prop.by.age) + (1/4) * sum(seroprob.noci[,5] * prop.by.age)
+  return(prop.susc.noci)
+}
+
+# function to calculate the proportion susceptible with cross-immunity
 calc.prop.susc.ci <- function(age.dist, FOI, inv.cross.im)
 {
   seroprob.ci <- ode(c(1,rep(0,8)),age.dist[,1], prop.exposed.model.ci,parms=c(FOI,inv.cross.im))

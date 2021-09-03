@@ -50,34 +50,33 @@ calc_efficacy <- function(age.dist, # age distribution for Indonesia
   rho.ct <- 1 - rho.cc
   
   # compute the IARs 
-  IAR.t.bestcase <- optim(par = c(0.9), fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0 * (1 - epsilon))}, lower = c(0), upper = c(1), method = 'Brent')$par - (1-S0)
-  IAR.c.bestcase <- optim(par = c(0.9), fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0)}, lower = c(0), upper = c(1), method = 'Brent')$par - (1-S0)
-  Sf.t.bestcase <- S0 - IAR.t.bestcase
-  Sf.c.bestcase <- S0 - IAR.c.bestcase
+  IAR.t.bestcase <- ifelse(R0 * (1 - epsilon) * S0 > 1, optim(par = S0, fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0 * (1 - epsilon))}, lower = log(R0 * (1 - epsilon) * S0) / R0 / (1 - epsilon), upper = S0, method = 'Brent')$par, 0)
+  IAR.c.bestcase <- ifelse(R0 * S0 > 1, optim(par = S0, fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0)}, lower = log(R0 * S0) / R0, upper = S0, method = 'Brent')$par, 0)
+  ## Sf.t.bestcase <- S0 - IAR.t.bestcase
+  ## Sf.c.bestcase <- S0 - IAR.c.bestcase
 
-  IAR.t.mosquito <- optim(par = c(0.9), fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0 * (1 - Ct * epsilon))}, lower = c(0), upper = c(1), method = 'Brent')$par - (1-S0)
-  IAR.c.mosquito <- optim(par = c(0.9), fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0 * (1 - Cc * epsilon))}, lower = c(0), upper = c(1), method = 'Brent')$par - (1-S0)
-  Sf.t.mosquito <- S0 - IAR.t.mosquito
-  Sf.c.mosquito <- S0 - IAR.c.mosquito
+  IAR.t.mosquito <- ifelse(R0 * (1 - Ct * epsilon) * S0 > 1, optim(par = S0, fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0 * (1 - Ct * epsilon))}, lower = log(R0 * (1 - epsilon * Ct) * S0) / R0 / (1 - epsilon * Ct), upper = S0, method = 'Brent')$par, 0)
+  IAR.c.mosquito <- ifelse(R0 * (1 - Cc * epsilon) * S0 > 1, optim(par = S0, fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0 * (1 - Cc * epsilon))}, lower = log(R0 * (1 - epsilon * Cc) * S0) / R0 / (1 - epsilon * Cc), upper = S0, method = 'Brent')$par, 0)
+  ## Sf.t.mosquito <- S0 - IAR.t.mosquito
+  ## Sf.c.mosquito <- S0 - IAR.c.mosquito
   
   IAR.t.human <- IAR.t.mosquito * rho.tt + IAR.c.mosquito * rho.tc
   IAR.c.human <- IAR.c.mosquito * rho.cc + IAR.t.mosquito * rho.ct
-  Sf.t.human <- S0 - IAR.t.human
-  Sf.c.human <- S0 - IAR.c.human
+  ## Sf.t.human <- S0 - IAR.t.human
+  ## Sf.c.human <- S0 - IAR.c.human
   
-  IAR.suppression <- optim(c(0.9,0.9),function(par)
-    loss.two(par[1],par[2], rho.tt = rho.tt, rho.tc = rho.tc, rho.cc = rho.cc, rho.ct = rho.ct, Cc = Cc, Ct = Ct, epsilon = epsilon, S0 = S0, R0 = R0),lower=c(0,0),upper=c(1,1),method='BFGS',
-    control = list(reltol=1e-12))$par - (1 - S0)
+  IAR.suppression <- optim(c(S0,S0),function(par)
+    loss.two(par[1], par[2], rho.tt = rho.tt, rho.tc = rho.tc, rho.cc = rho.cc, rho.ct = rho.ct, Cc = Cc, Ct = Ct, epsilon = epsilon, S0 = S0, R0 = R0))$par
   IAR.t.suppression <- IAR.suppression[1]
   IAR.c.suppression <- IAR.suppression[2]
-  Sf.t.suppression <- S0 - IAR.t.suppression
-  Sf.c.suppression <- S0 - IAR.c.suppression
+  ## Sf.t.suppression <- S0 - IAR.t.suppression
+  ## Sf.c.suppression <- S0 - IAR.c.suppression
   
   # calculate efficacy
-  eff.bestcase <- 1 - (IAR.t.bestcase / IAR.c.bestcase) * (Sf.c.bestcase / Sf.t.bestcase)
-  eff.mosquito <- 1 - (IAR.t.mosquito / IAR.c.mosquito) * (Sf.c.mosquito / Sf.t.mosquito)
-  eff.human <- 1 - (IAR.t.human / IAR.c.human) * (Sf.c.human / Sf.t.human)
-  eff.suppression <- 1 - (IAR.t.suppression / IAR.c.suppression) * (Sf.c.suppression / Sf.t.suppression)
+  ## eff.bestcase <- 1 - (IAR.t.bestcase / IAR.c.bestcase) * (Sf.c.bestcase / Sf.t.bestcase)
+  ## eff.mosquito <- 1 - (IAR.t.mosquito / IAR.c.mosquito) * (Sf.c.mosquito / Sf.t.mosquito)
+  ## eff.human <- 1 - (IAR.t.human / IAR.c.human) * (Sf.c.human / Sf.t.human)
+  ## eff.suppression <- 1 - (IAR.t.suppression / IAR.c.suppression) * (Sf.c.suppression / Sf.t.suppression)
   eff.bestcase <- 1 - (IAR.t.bestcase / IAR.c.bestcase) * (1 - IAR.c.bestcase) / (1 - IAR.t.bestcase)
   eff.mosquito <- 1 - (IAR.t.mosquito / IAR.c.mosquito) * (1 - IAR.c.mosquito) / (1 - IAR.t.mosquito)
   eff.human <- 1 - (IAR.t.human / IAR.c.human) * (1 - IAR.c.human) / (1 - IAR.t.human)

@@ -31,6 +31,7 @@ inv.cross.im <- 0.5
 S0 = calc.prop.susc.ci(age.dist = age.dist,
                        FOI = FOI,
                        inv.cross.im = inv.cross.im)
+# S0 = 1 - 1e-7 #slightly less than 1 or optim solver breaks
 
 # calculate R0 
 #R0 <- 1 + life.expectancy * FOI
@@ -56,14 +57,14 @@ S.f.bestcase = S.f.mosquito = S.f.human = S.f.fullmodel = matrix(0,2,length(epsi
 for(jj in 1:length(epsilon.vec)){
   epsilon = epsilon.vec[jj]
   
-  IAR.bestcase[1,jj] <- ifelse(R0 * (1 - epsilon) != 0, plogis(optim(par = qlogis(S0), fn = function(par){loss.one(pi = plogis(par), S0 = S0, R0 = R0 * (1 - epsilon))}, lower = qlogis(1e-10), upper = qlogis(S0), method = 'Brent')$par), 0)
-  IAR.bestcase[2,jj] <- ifelse(R0 != 0, plogis(optim(par = qlogis(S0), fn = function(par){loss.one(pi = plogis(par), S0 = S0, R0 = R0)}, lower = qlogis(1e-10), upper = qlogis(S0), method = 'Brent')$par), 0)
+  IAR.bestcase[1,jj] <- ifelse(R0 * (1 - epsilon) * S0 > 1, optim(par = S0, fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0 * (1 - epsilon))}, lower = log(R0 * (1 - epsilon) * S0) / R0 / (1 - epsilon), upper = S0, method = 'Brent')$par, 0)
+  IAR.bestcase[2,jj] <- ifelse(R0 * S0 > 1, optim(par = S0, fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0)}, lower = log(R0 * S0) / R0, upper = S0, method = 'Brent')$par, 0)
   ## S.f.bestcase[1,jj] <- S0 - IAR.bestcase[1,jj]
   ## S.f.bestcase[2,jj] <- S0 - IAR.bestcase[2,jj]
   
   
-  IAR.mosquito[1,jj] <- ifelse(R0 * (1 - Ct * epsilon) != 0, plogis(optim(par = qlogis(S0), fn = function(par){loss.one(pi = plogis(par), S0 = S0, R0 = R0 * (1 - Ct * epsilon))}, lower = qlogis(1e-10), upper = qlogis(S0), method = 'Brent')$par), 0)
-  IAR.mosquito[2,jj] <- ifelse(R0 * (1 - Cc * epsilon) != 0, plogis(optim(par = qlogis(S0), fn = function(par){loss.one(pi = plogis(par), S0 = S0, R0 = R0 * (1 - Cc * epsilon))}, lower = qlogis(1e-10), upper = qlogis(S0), method = 'Brent')$par), 0)
+  IAR.mosquito[1,jj] <- ifelse(R0 * (1 - Ct * epsilon) * S0 > 1, optim(par = S0, fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0 * (1 - Ct * epsilon))}, lower = log(R0 * (1 - epsilon * Ct) * S0) / R0 / (1 - epsilon * Ct), upper = S0, method = 'Brent')$par, 0)
+  IAR.mosquito[2,jj] <- ifelse(R0 * (1 - Cc * epsilon) * S0 > 1, optim(par = S0, fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0 * (1 - Cc * epsilon))}, lower = log(R0 * (1 - epsilon * Cc) * S0) / R0 / (1 - epsilon * Cc), upper = S0, method = 'Brent')$par, 0)
   ## S.f.mosquito[1,jj] <- S0 - IAR.mosquito[1,jj]
   ## S.f.mosquito[2,jj] <- S0 - IAR.mosquito[2,jj]
   
@@ -72,8 +73,8 @@ for(jj in 1:length(epsilon.vec)){
   ## S.f.human[1,jj] <- S0 - IAR.human[1,jj]
   ## S.f.human[2,jj] <- S0 - IAR.human[2,jj]
   
-  IAR.fullmodel[,jj] = plogis(optim(qlogis(c(S0,S0)),function(par)
-    loss.two(plogis(par[1]),plogis(par[2]), rho.tt = rho.tt, rho.tc = rho.tc, rho.cc = rho.cc, rho.ct = rho.ct, Cc = Cc, Ct = Ct, epsilon = epsilon, S0 = S0, R0 = R0))$par)
+  IAR.fullmodel[,jj] = optim(c(S0,S0),function(par)
+    loss.two(par[1],par[2], rho.tt = rho.tt, rho.tc = rho.tc, rho.cc = rho.cc, rho.ct = rho.ct, Cc = Cc, Ct = Ct, epsilon = epsilon, S0 = S0, R0 = R0))$par
   ## S.f.fullmodel[1,jj] <- S0 - IAR.fullmodel[1,jj]
   ## S.f.fullmodel[2,jj] <- S0 - IAR.fullmodel[2,jj]
 }
