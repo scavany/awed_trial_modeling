@@ -51,8 +51,8 @@ rho.tt = rho_tt_checker(60,delta)
 rho.cc = rho_cc_checker(60,delta)
 rho.tc = 1 - rho.tt
 rho.ct = 1 - rho.cc
-IAR.bestcase = IAR.mosquito = IAR.human = IAR.fullmodel = matrix(0,2,length(epsilon.vec))
-S.f.bestcase = S.f.mosquito = S.f.human = S.f.fullmodel = matrix(0,2,length(epsilon.vec))
+IAR.bestcase = IAR.mosquito = IAR.human = IAR.hummoz = IAR.humsupp = IAR.fullmodel = matrix(0,2,length(epsilon.vec))
+## S.f.bestcase = S.f.mosquito = S.f.human = S.f.fullmodel = matrix(0,2,length(epsilon.vec))
 
 for(jj in 1:length(epsilon.vec)){
   epsilon = epsilon.vec[jj]
@@ -67,11 +67,17 @@ for(jj in 1:length(epsilon.vec)){
   IAR.mosquito[2,jj] <- ifelse(R0 * (1 - Cc * epsilon) * S0 > 1, optim(par = S0, fn = function(par){loss.one(pi = par, S0 = S0, R0 = R0 * (1 - Cc * epsilon))}, lower = log(R0 * (1 - epsilon * Cc) * S0) / R0 / (1 - epsilon * Cc), upper = S0, method = 'Brent')$par, 0)
   ## S.f.mosquito[1,jj] <- S0 - IAR.mosquito[1,jj]
   ## S.f.mosquito[2,jj] <- S0 - IAR.mosquito[2,jj]
+
+  IAR.human[1,jj] <- IAR.bestcase[1,jj] * rho.tt + IAR.bestcase[2,jj] * rho.tc
+  IAR.human[2,jj] <- IAR.bestcase[2,jj] * rho.cc + IAR.bestcase[1,jj] * rho.ct
   
-  IAR.human[1,jj] <- IAR.mosquito[1,jj] * rho.tt + IAR.mosquito[2,jj] * rho.tc
-  IAR.human[2,jj] <- IAR.mosquito[2,jj] * rho.cc + IAR.mosquito[1,jj] * rho.ct
+  IAR.hummoz[1,jj] <- IAR.mosquito[1,jj] * rho.tt + IAR.mosquito[2,jj] * rho.tc
+  IAR.hummoz[2,jj] <- IAR.mosquito[2,jj] * rho.cc + IAR.mosquito[1,jj] * rho.ct
   ## S.f.human[1,jj] <- S0 - IAR.human[1,jj]
   ## S.f.human[2,jj] <- S0 - IAR.human[2,jj]
+  
+  IAR.humsupp[,jj] = optim(c(S0,S0),function(par)
+    loss.two(par[1],par[2], rho.tt = rho.tt, rho.tc = rho.tc, rho.cc = rho.cc, rho.ct = rho.ct, Cc = 0, Ct = 1, epsilon = epsilon, S0 = S0, R0 = R0))$par
   
   IAR.fullmodel[,jj] = optim(c(S0,S0),function(par)
     loss.two(par[1],par[2], rho.tt = rho.tt, rho.tc = rho.tc, rho.cc = rho.cc, rho.ct = rho.ct, Cc = Cc, Ct = Ct, epsilon = epsilon, S0 = S0, R0 = R0))$par
@@ -79,44 +85,46 @@ for(jj in 1:length(epsilon.vec)){
   ## S.f.fullmodel[2,jj] <- S0 - IAR.fullmodel[2,jj]
 }
 
-## plot(epsilon.vec, IAR.bestcase[1,],type='l',col=palette[1],lwd=3)
-## lines(epsilon.vec, IAR.bestcase[2,],col=palette[1],lwd=3,lty="dashed")
-## lines(epsilon.vec, IAR.mosquito[1,],col=palette[2],lwd=3)
-## lines(epsilon.vec, IAR.mosquito[2,],col=palette[2],lwd=3,lty="dashed")
-## lines(epsilon.vec, IAR.human[1,],col=palette[3],lwd=3)
-## lines(epsilon.vec, IAR.human[2,],col=palette[3],lwd=3,lty="dashed")
-## lines(epsilon.vec, IAR.fullmodel[1,],col=palette[4],lwd=3)
-## lines(epsilon.vec, IAR.fullmodel[2,],col=palette[4],lwd=3,lty="dashed")
-
 # compute efficacy
 ## ARR method
-efficacy.bestcase <- 1 - (IAR.bestcase[1,] / IAR.bestcase[2,])
-efficacy.mosquito <- 1 - (IAR.mosquito[1,] / IAR.mosquito[2,])
-efficacy.human <- 1 - (IAR.human[1,] / IAR.human[2,])
-efficacy.fullmodel <- 1 - (IAR.fullmodel[1,] / IAR.fullmodel[2,])
+## efficacy.bestcase <- 1 - (IAR.bestcase[1,] / IAR.bestcase[2,])
+## efficacy.mosquito <- 1 - (IAR.mosquito[1,] / IAR.mosquito[2,])
+## efficacy.human <- 1 - (IAR.human[1,] / IAR.human[2,])
+## efficacy.fullmodel <- 1 - (IAR.fullmodel[1,] / IAR.fullmodel[2,])
 ## OR1 method
 ## efficacy.bestcase <- 1 - ((IAR.bestcase[1,] / IAR.bestcase[2,]) * (S.f.bestcase[2,] / S.f.bestcase[1,]))
 ## efficacy.mosquito <- 1 - ((IAR.mosquito[1,] / IAR.mosquito[2,]) * (S.f.mosquito[2,] / S.f.mosquito[1,]))
 ## efficacy.human <- 1 - ((IAR.human[1,] / IAR.human[2,]) * (S.f.human[2,] / S.f.human[1,]))
 ## efficacy.fullmodel <- 1 - ((IAR.fullmodel[1,] / IAR.fullmodel[2,]) * (S.f.fullmodel[2,] / S.f.fullmodel[1,]))
 ## OR2 method
-## efficacy.bestcase <- 1 - (IAR.bestcase[1,] / IAR.bestcase[2,]) * (1 - IAR.bestcase[2,]) / (1 - IAR.bestcase[1,])
-## efficacy.mosquito <- 1 - (IAR.mosquito[1,] / IAR.mosquito[2,]) * (1 - IAR.mosquito[2,]) / (1 - IAR.mosquito[1,])
-## efficacy.human <- 1 - (IAR.human[1,] / IAR.human[2,]) * (1 - IAR.human[2,]) / (1 - IAR.human[1,])
-## efficacy.fullmodel <- 1 - (IAR.fullmodel[1,] / IAR.fullmodel[2,]) * (1 - IAR.fullmodel[2,]) / (1 - IAR.fullmodel[1,])
+efficacy.bestcase <- 1 - (IAR.bestcase[1,] / IAR.bestcase[2,]) * (1 - IAR.bestcase[2,]) / (1 - IAR.bestcase[1,])
+efficacy.mosquito <- 1 - (IAR.mosquito[1,] / IAR.mosquito[2,]) * (1 - IAR.mosquito[2,]) / (1 - IAR.mosquito[1,])
+efficacy.human <- 1 - (IAR.human[1,] / IAR.human[2,]) * (1 - IAR.human[2,]) / (1 - IAR.human[1,])
+efficacy.hummoz <- 1 - (IAR.hummoz[1,] / IAR.hummoz[2,]) * (1 - IAR.hummoz[2,]) / (1 - IAR.hummoz[1,])
+efficacy.humsupp <- 1 - (IAR.humsupp[1,] / IAR.humsupp[2,]) * (1 - IAR.humsupp[2,]) / (1 - IAR.humsupp[1,])
+efficacy.fullmodel <- 1 - (IAR.fullmodel[1,] / IAR.fullmodel[2,]) * (1 - IAR.fullmodel[2,]) / (1 - IAR.fullmodel[1,])
 
 # compute the fraction of the bias attributable to each phenomenon
-frac.bias.mosquito <-  (efficacy.bestcase - efficacy.mosquito) / (efficacy.bestcase - efficacy.fullmodel)
-frac.bias.human <- (efficacy.mosquito - efficacy.human) / (efficacy.bestcase - efficacy.fullmodel)
-frac.bias.fullmodel <- 1 - frac.bias.mosquito - frac.bias.human
+# assuming the following embedding, in this case: bestcase -> human -> hummoz -> fullmodel
+frac.bias.human <-  (efficacy.bestcase - efficacy.human) / (efficacy.bestcase - efficacy.fullmodel)
+frac.bias.hummoz <- (efficacy.human - efficacy.hummoz) / (efficacy.bestcase - efficacy.fullmodel)
+frac.bias.fullmodel <- 1 - frac.bias.hummoz - frac.bias.human
 
 # save output 
 save(epsilon.vec,
+     IAR.bestcase,
+     IAR.mosquito,
+     IAR.human,
+     IAR.hummoz,
+     IAR.humsupp,
+     IAR.fullmodel,
      efficacy.bestcase,
      efficacy.mosquito,
      efficacy.human,
+     efficacy.hummoz,
+     efficacy.humsupp,
      efficacy.fullmodel,
-     frac.bias.mosquito,
      frac.bias.human,
+     frac.bias.hummoz,
      frac.bias.fullmodel,
      file = './fig_2.RData')

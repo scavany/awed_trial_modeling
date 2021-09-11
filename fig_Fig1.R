@@ -81,6 +81,7 @@ segments(x0 = epsilon.trial, y0 = rep(0,3), y1 = efficacy.trial, lty = 3, col = 
 segments(x0  = rep(0,3), x1 = epsilon.trial, y0 = efficacy.trial, lty = 3, col = '#222222', lwd = 1.5)
 points(epsilon.trial, efficacy.trial, pch = 22, bg = c(palette[2], palette[1], palette[2]), col = '#222222', cex = 1.5)
 print(approxfun(efficacy.epsilon.bestcase,epsilon.vec)(efficacy.trial)) # values of epsilon in bestcase to produce trial efficacy
+print(approxfun(efficacy.epsilon.fullmodel,epsilon.vec)(efficacy.trial)) # values of epsilon in fullmodel to produce trial efficacy
 box()
 axis(side = 1, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from = 0, to = 100, by = 20))
 axis(side = 2, las = 1, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from = 0, to = 100, by = 20))
@@ -97,7 +98,8 @@ polygon(c(rho.vec, rev(rho.vec)), c(efficacy.rho[,1], rev(efficacy.rho[,3])), co
 lines(rho.vec, efficacy.rho[,3], lwd = 1.5, col = palette[2])
 lines(rho.vec, efficacy.rho[,1], lwd = 1.5, col = palette[2])
 lines(rho.vec, efficacy.rho[,2], lwd = 1.5, col = palette[1])
-print(efficacy.rho[rho.vec==0.7,2]) # observed efficacy if rho=70%
+print(efficacy.rho[rho.vec==0.75,2]) # observed efficacy if rho=75%
+print((0.771 - efficacy.rho[rho.vec==0.75,2]) / 0.771) # proportional reduction
 box()
 axis(side = 1, at = seq(from = 0.5, to = 1, by = 0.1), labels = seq(from = 50, to = 100, by = 10))
 axis(side = 2, las = 1, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from = 0, to = 100, by = 20))
@@ -120,6 +122,7 @@ lines(delta.vec, efficacy.delta[1,], lwd = 1.5, col = palette[2])
 lines(delta.vec, efficacy.delta[3,], lwd = 1.5, col = palette[2])
 lines(delta.vec, efficacy.delta[2,], lwd = 1.5, col = palette[1])
 print(approxfun(delta.vec,efficacy.delta[2,])(c(500,2000))) #efficacy observed when delta==(500m,2000m)
+print((0.771 - approxfun(delta.vec,efficacy.delta[2,])(c(500,2000)))) / 0.771 # proportion change
 segments(x0 = 1000, y0 = 0, y1 = efficacy.delta.mean, lty = 3, col = '#222222', lwd = 1.5)
 segments(x0 = 0, x1 = 1000, y0 = efficacy.delta.mean, lty = 3, col = '#222222', lwd = 1.5)
 box()
