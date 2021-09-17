@@ -76,11 +76,11 @@ for(jj in 1:length(epsilon.vec)){
   ## S.f.human[1,jj] <- S0 - IAR.human[1,jj]
   ## S.f.human[2,jj] <- S0 - IAR.human[2,jj]
   
-  IAR.humsupp[,jj] = optim(c(S0,S0),function(par)
-    loss.two(par[1],par[2], rho.tt = rho.tt, rho.tc = rho.tc, rho.cc = rho.cc, rho.ct = rho.ct, Cc = 0, Ct = 1, epsilon = epsilon, S0 = S0, R0 = R0))$par
+  IAR.humsupp[,jj] = plogis(optim(qlogis(c(S0,S0)),function(par)
+    loss.two(plogis(par[1]),plogis(par[2]), rho.tt = rho.tt, rho.tc = rho.tc, rho.cc = rho.cc, rho.ct = rho.ct, Cc = 0, Ct = 1, epsilon = epsilon, S0 = S0, R0 = R0))$par)
   
-  IAR.fullmodel[,jj] = optim(c(S0,S0),function(par)
-    loss.two(par[1],par[2], rho.tt = rho.tt, rho.tc = rho.tc, rho.cc = rho.cc, rho.ct = rho.ct, Cc = Cc, Ct = Ct, epsilon = epsilon, S0 = S0, R0 = R0))$par
+  IAR.fullmodel[,jj] = plogis(optim(qlogis(c(S0,S0)),function(par)
+    loss.two(plogis(par[1]),plogis(par[2]), rho.tt = rho.tt, rho.tc = rho.tc, rho.cc = rho.cc, rho.ct = rho.ct, Cc = Cc, Ct = Ct, epsilon = epsilon, S0 = S0, R0 = R0))$par)
   ## S.f.fullmodel[1,jj] <- S0 - IAR.fullmodel[1,jj]
   ## S.f.fullmodel[2,jj] <- S0 - IAR.fullmodel[2,jj]
 }

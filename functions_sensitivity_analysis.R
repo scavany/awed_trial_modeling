@@ -61,14 +61,12 @@ calc_efficacy <- function(age.dist, # age distribution for Indonesia
 
   IAR.t.hummoz <- IAR.t.mosquito * rho.tt + IAR.c.mosquito * rho.tc
   IAR.c.hummoz <- IAR.c.mosquito * rho.cc + IAR.t.mosquito * rho.ct
-    
-  IAR.humsupp <- optim(c(S0,S0),function(par)
-    loss.two(par[1], par[2], rho.tt = rho.tt, rho.tc = rho.tc, rho.cc = rho.cc, rho.ct = rho.ct, Cc = 0, Ct = 1, epsilon = epsilon, S0 = S0, R0 = R0))$par
+
+  IAR.humsupp <- plogis(optim(qlogis(c(S0,S0)),function(par) loss.two(plogis(par[1]), plogis(par[2]), rho.tt = rho.tt, rho.tc = rho.tc, rho.cc = rho.cc, rho.ct = rho.ct, Cc = 0, Ct = 1, epsilon = epsilon, S0 = S0, R0 = R0))$par)
   IAR.t.humsupp <- IAR.humsupp[1]
   IAR.c.humsupp <- IAR.humsupp[2]
 
-  IAR.fullmodel <- optim(c(S0,S0),function(par)
-    loss.two(par[1], par[2], rho.tt = rho.tt, rho.tc = rho.tc, rho.cc = rho.cc, rho.ct = rho.ct, Cc = Cc, Ct = Ct, epsilon = epsilon, S0 = S0, R0 = R0))$par
+  IAR.fullmodel <- plogis(optim(qlogis(c(S0,S0)),function(par) loss.two(plogis(par[1]), plogis(par[2]), rho.tt = rho.tt, rho.tc = rho.tc, rho.cc = rho.cc, rho.ct = rho.ct, Cc = Cc, Ct = Ct, epsilon = epsilon, S0 = S0, R0 = R0))$par)   
   IAR.t.fullmodel <- IAR.fullmodel[1]
   IAR.c.fullmodel <- IAR.fullmodel[2]
   

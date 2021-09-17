@@ -59,10 +59,10 @@ for(jj in 1:length(epsilon.vec)){
   ## efficacy.epsilon.bestcase[jj] = 1 - ((IAR.t.mosquito / IAR.c.mosquito) * (S.f.c.mosquito / S.f.t.mosquito)) #OR method 1
   efficacy.epsilon.bestcase[jj] = 1 - (IAR.t.mosquito / IAR.c.mosquito) * (1 - IAR.c.mosquito) / (1 - IAR.t.mosquito) #OR method 2
   
-  IAR.fullmodel = optim(c(S0,S0),function(par)
-      loss.two(par[1],par[2],
+  IAR.fullmodel = plogis(optim(qlogis(c(S0,S0)),function(par)
+      loss.two(plogis(par[1]),plogis(par[2]),
                rho.tt = rho.tt, rho.tc = rho.tc, rho.cc = rho.cc, rho.ct = rho.ct, Cc = Cc,
-               Ct = Ct, epsilon = epsilon, R0 = R0, S0 = S0))$par
+               Ct = Ct, epsilon = epsilon, R0 = R0, S0 = S0))$par)
   ## S.f.t.fullmodel <- 1 - (IAR.fullmodel[1] + (1-S0))
   ## S.f.c.fullmodel <- 1 - (IAR.fullmodel[2] + (1-S0))
   
