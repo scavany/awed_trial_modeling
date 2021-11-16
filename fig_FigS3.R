@@ -35,10 +35,10 @@ box()
 axis(side = 1, at = seq(from = 0, to = 1, by = 0.2), labels = NA)#seq(from = 0, to = 100, by = 20))
 axis(side = 2, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from = 0, to = 100, by = 20), las = 1)
 ## mtext(side = 1, line = 2.3, expression('Reduction in ' * 'R'[0] * ' (%), ' * epsilon))
-mtext(side = 2, line = 2.3, 'Contribution to observed bias (%)')
+mtext(side = 2, line = 2.3, 'Contribution to bias (%)')
 mtext(side = 3, line = 0, adj = 0, 'A', font = 2)
 text(epsilon.vec[2],0.09,"Human\nmovement",pos=4)
-text(epsilon.vec[2],0.47,"Mosquito\ncontamination",
+text(epsilon.vec[2],0.47,"Mosquito\nmovement",
      pos=4,col="white")
 text(epsilon.vec[2],0.86,"Transmission\ncoupling",
      pos=4,col="white")
@@ -58,10 +58,10 @@ box()
 axis(side = 1, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from = 0, to = 100, by = 20))
 axis(side = 2, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from = 0, to = 100, by = 20), las = 1)
 ## mtext(side = 1, line = 2.3, expression('Reduction in ' * 'R'[0] * ' (%), ' * epsilon))
-mtext(side = 2, line = 2.3, 'Contribution to observed bias (%)')
+mtext(side = 2, line = 2.3, 'Contribution to bias (%)')
 mtext(side = 3, line = 0, adj = 0, 'B', font = 2)
 text(epsilon.vec[2],0.09,"Human\nmovement",pos=4)
-text(epsilon.vec[2],0.47,"Mosquito\ncontamination",
+text(epsilon.vec[2],0.47,"Mosquito\nmovement",
      pos=4,col="white")
 text(epsilon.vec[2],0.86,"Transmission\ncoupling",
      pos=4,col="white")
@@ -81,10 +81,10 @@ box()
 axis(side = 1, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from = 0, to = 100, by = 20))
 axis(side = 2, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from = 0, to = 100, by = 20), las = 1)
 mtext(side = 1, line = 2.3, expression('Reduction in ' * 'R'[0] * ' (%), ' * epsilon))
-mtext(side = 2, line = 2.3, 'Contribution to observed bias (%)')
+mtext(side = 2, line = 2.3, 'Contribution to bias (%)')
 mtext(side = 3, line = 0, adj = 0, 'C', font = 2)
 text(epsilon.vec[2],0.09,"Human\nmovement",pos=4)
-text(epsilon.vec[2],0.47,"Mosquito\ncontamination",
+text(epsilon.vec[2],0.47,"Mosquito\nmovement",
      pos=4,col="white")
 text(epsilon.vec[2],0.86,"Transmission\ncoupling",
      pos=4,col="white")

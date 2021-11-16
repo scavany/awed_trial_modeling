@@ -48,7 +48,7 @@ axis(side = 2, at = seq(from = -1, to = 1, by = 0.5), labels = seq(from = -100, 
 abline(h=0,col="gray",lty=3)
 ## mtext(side = 1, line = 2.3, expression('Reduction in ' * 'R'[0] * ' (%), ' * epsilon))
 mtext(side = 2, line = 2.3, 'Total bias (%)')
-mtext(side = 3, line = 0, adj = 0, 'B. Mosquito contamination', font = 2)
+mtext(side = 3, line = 0, adj = 0, 'B. Mosquito movement', font = 2)
 
 plot(NA, NA, xlim = c(0.01,1), ylim = c(-1,1), axes = F,
      xlab = '', ylab = '', xaxs = 'i', yaxs = 'i')

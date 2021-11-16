@@ -46,7 +46,7 @@ axis(side = 1, at = seq(from = 0, to = 1, by = 0.2), labels = NA)#seq(from = 0, 
 axis(side = 2, at = seq(from = 0, to = 1, by = 0.1), labels = seq(from = 0, to = 100, by = 10), las = 1)
 ## mtext(side = 1, line = 2.3, expression('Reduction in ' * 'R'[0] * ' (%), ' * epsilon))
 mtext(side = 2, line = 2.3, 'Infection attack rate (%)')
-mtext(side = 3, line = 0, adj = 0, 'B. Mosquito contamination', font = 2, cex=0.75)
+mtext(side = 3, line = 0, adj = 0, 'B. Mosquito movement', font = 2, cex=0.75)
 
 plot(NA, NA, xlim = c(0.01,1), ylim = c(0,min(1.5*max(IAR.bestcase),1)), axes = F,
      xlab = '', ylab = '', xaxs = 'i', yaxs = 'i')
@@ -71,7 +71,7 @@ axis(side = 1, at = seq(from = 0, to = 1, by = 0.2), labels = NA)#seq(from = 0, 
 axis(side = 2, at = seq(from = 0, to = 1, by = 0.1), labels = seq(from = 0, to = 100, by = 10), las = 1)
 ## mtext(side = 1, line = 2.3, expression('Reduction in ' * 'R'[0] * ' (%), ' * epsilon))
 mtext(side = 2, line = 2.3, 'Infection attack rate (%)')
-mtext(side = 3, line = 0, adj = 0, 'D. Human movement and mosquito contamination', font = 2, cex=0.75)
+mtext(side = 3, line = 0, adj = 0, 'D. Human and mosquito movement', font = 2, cex=0.75)
 
 plot(NA, NA, xlim = c(0.01,1), ylim = c(0,min(1.5*max(IAR.bestcase),1)), axes = F,
      xlab = '', ylab = '', xaxs = 'i', yaxs = 'i')

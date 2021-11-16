@@ -159,9 +159,9 @@ sweep.out.full$bias.mosquito <-  pmin(0,(rowSums(sweep.out.full[,c(2,2,2)]) - ro
 sweep.out.full$bias.human <- pmin(0,(rowSums(sweep.out.full[,c(3,3,3)]) - rowSums(sweep.out.full[,c(1,1,1)])) / 3)
 sweep.out.full$bias.suppression <- pmin(0,(rowSums(sweep.out.full[,c(6,6,6)]) - rowSums(sweep.out.full[,c(1,1,1)])) / 3)
 vbsa.mosquito <- sobol_indices(Y=sweep.out.full$bias.mosquito,N=nseq,params=parm.names,
-                                  total="glen")
+                               total="glen")
 vbsa.human <- sobol_indices(Y=sweep.out.full$bias.human,N=nseq,params=parm.names,
-                                  total="glen")
+                            total="glen")
 vbsa.suppression <- sobol_indices(Y=sweep.out.full$bias.suppression,N=nseq,params=parm.names,
                                   total="glen")
 

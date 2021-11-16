@@ -46,7 +46,7 @@ print(approxfun(epsilon.vec, efficacy.fullmodel)(0.703))
 box()
 axis(side = 1, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from = 0, to = 100, by = 20))
 axis(side = 2, las = 1, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from = 0, to = 100, by = 20))
-mtext(side = 2, line = 2.3, 'Observed efficacy (%)')
+mtext(side = 2, line = 2.3, 'Estimated efficacy (%)')
 mtext(side = 3, line = 0, adj = 0, 'A', font = 2)
 legend('bottomright', #pch = c(15,15,15,15), pt.cex = 1.5,
        col = palette[c(1,2,3,4)],
@@ -75,10 +75,10 @@ print(approxfun(frac.bias.fullmodel,epsilon.vec)(0.2))
 axis(side = 1, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from = 0, to = 100, by = 20))
 axis(side = 2, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from = 0, to = 100, by = 20), las = 1)
 mtext(side = 1, line = 2.3, expression('Reduction in ' * 'R'[0] * ' (%), ' * epsilon))
-mtext(side = 2, line = 2.3, 'Contribution to observed bias (%)')
+mtext(side = 2, line = 2.3, 'Contribution to bias (%)')
 mtext(side = 3, line = 0, adj = 0, 'B', font = 2)
 text(epsilon.vec[2],0.09,"Human\nmovement",pos=4)
-text(epsilon.vec[2],0.47,"Mosquito\ncontamination",
+text(epsilon.vec[2],0.47,"Mosquito\nmovement",
      pos=4,col="white")
 text(epsilon.vec[2],0.86,"Transmission\ncoupling",
      pos=4,col="white")

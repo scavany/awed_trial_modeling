@@ -26,14 +26,15 @@ efficacy.implied.contour.df <- getContourLines(efficacy.implied.contour, levels 
 ##pdf(file = './fig_1.pdf', width = 10 * (5/6), height = 5)
 jpeg(filename = './fig_1.jpg', width = 10 * (5/6), height = 5,units="in",res=1000)
 layout(mat = matrix(1:6, nrow = 2, byrow = T))
-par(mar = c(3.3,3.6,1.3,1.2))
+par(mar = c(2,0.1,1.3,0.1))
 checkerboard.im <- load.image("./checkerboard_diagram.png")
 plot(checkerboard.im,axes=FALSE)
-mtext(side = 3, line = 0, adj = 0, 'A', font = 2)
+mtext(side = 3, line = 0, adj = 0.04, 'A', font = 2)
+##text(200.6,-70,"A",cex=1.5)
 
 #plot.new()
 #mtext(side = 3, line = 0, adj = 0, 'B', font = 2)
-
+par(mar = c(3.3,3.6,1.3,1.2))
 plot(NA, NA, xlim = c(0,max(b.vec)), ylim = c(0.5,1), axes = F,
      xaxs = 'i', yaxs = 'i', xlab = '', ylab = '')
 abline(h = seq(from = 0.5, to = 1, by = 0.1),
@@ -86,7 +87,7 @@ box()
 axis(side = 1, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from = 0, to = 100, by = 20))
 axis(side = 2, las = 1, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from = 0, to = 100, by = 20))
 mtext(side = 1, line = 2.3, expression('Reduction in ' * 'R'[0] * ' (%), ' * epsilon))
-mtext(side = 2, line = 2.3, 'Observed efficacy (%)')
+mtext(side = 2, line = 2.3, 'Estimated efficacy (%)')
 mtext(side = 3, line = 0, adj = 0, 'D', font = 2)
 
 rho.vec = seq(0.5,1,by=0.001)
@@ -98,8 +99,8 @@ polygon(c(rho.vec, rev(rho.vec)), c(efficacy.rho[,1], rev(efficacy.rho[,3])), co
 lines(rho.vec, efficacy.rho[,3], lwd = 1.5, col = palette[2])
 lines(rho.vec, efficacy.rho[,1], lwd = 1.5, col = palette[2])
 lines(rho.vec, efficacy.rho[,2], lwd = 1.5, col = palette[1])
-print(efficacy.rho[rho.vec==0.75,2]) # observed efficacy if rho=75%
-print((0.771 - efficacy.rho[rho.vec==0.75,2]) / 0.771) # proportional reduction
+print(efficacy.rho[abs(rho.vec - rho.vec.by.b[120]) < 0.0005,2]) # observed efficacy if b=120m
+print((0.771 - efficacy.rho[abs(rho.vec - rho.vec.by.b[120]) < 0.0005,2]) / 0.771) # proportional reduction
 box()
 axis(side = 1, at = seq(from = 0.5, to = 1, by = 0.1), labels = seq(from = 50, to = 100, by = 10))
 axis(side = 2, las = 1, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from = 0, to = 100, by = 20))
