@@ -48,12 +48,28 @@ axis(side = 1, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from = 0, to =
 axis(side = 2, las = 1, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from = 0, to = 100, by = 20))
 mtext(side = 2, line = 2.3, 'Estimated efficacy (%)')
 mtext(side = 3, line = 0, adj = 0, 'A', font = 2)
+
 legend('bottomright', #pch = c(15,15,15,15), pt.cex = 1.5,
-       col = palette[c(1,2,3,4)],
-       legend = c('None', 'Human movement', 'Mosquito contamination',
-                  'Transmission coupling'),
-       lty = c(1,1,3,1), lwd=linewidth*c(1,1,1,2.5),
-       title = expression(underline('Sources of bias')), bty = 'n')
+       col = palette[c(1,2,3,2,4,4)],
+       legend = c(expression(italic(Eff^(0))), expression(italic(Eff^(h))),
+                  expression(italic(Eff^(m))), expression(italic(Eff^(hm))),
+                  expression(italic(Eff^(ht))), expression(italic(Eff^(hmt)))),
+       lty = c(1,1,3,1,1,1), lwd=linewidth*c(1,1,1,1,2.5,2.5),
+       title = expression(underline('Estimate of efficacy')), bty = 'n')
+legend('bottomright', #pch = c(15,15,15,15), pt.cex = 1.5,
+       col = palette[c(1,2,3,2,2,2)],
+       legend = c(expression(italic(Eff^(0))), expression(italic(Eff^(h))),
+                  expression(italic(Eff^(m))), expression(italic(Eff^(hm))),
+                  expression(italic(Eff^(ht))), expression(italic(Eff^(hmt)))),
+       lty = c(1,1,3,1,1,1), lwd=linewidth*c(1,1,1,1,1,1),
+       title = expression(underline('Estimate of efficacy')), bty = 'n')
+legend('bottomright', #pch = c(15,15,15,15), pt.cex = 1.5,
+       col = palette[c(1,2,3,3,2,3)],
+       legend = c(expression(italic(Eff^(0))), expression(italic(Eff^(h))),
+                  expression(italic(Eff^(m))), expression(italic(Eff^(hm))),
+                  expression(italic(Eff^(ht))), expression(italic(Eff^(hmt)))),
+       lty = c(1,1,3,3,1,3), lwd=linewidth*c(1,1,1,1,1,1),
+       title = expression(underline('Estimate of efficacy')), bty = 'n')
 
 frac.bias.mosquito <-  (efficacy.bestcase + efficacy.human + efficacy.humsupp - efficacy.mosquito - efficacy.hummoz - efficacy.fullmodel) / 3 / (efficacy.bestcase - efficacy.fullmodel)
 frac.bias.suppression <- (2 * efficacy.hummoz + efficacy.human - efficacy.humsupp - 2 * efficacy.fullmodel) / 3 / (efficacy.bestcase - efficacy.fullmodel)
