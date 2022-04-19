@@ -124,3 +124,78 @@ rho_tc_checker = rho_ct_checker = function(b,d){
 Nc_checker = function(d){
   1
 }
+
+
+## SIR models
+## Temperature-dependent beta
+beta.varT <- function(time,b.mean,b.amp,offset=2.8*365.25/8) {
+    return(b.mean * (1 + b.amp * sin((offset + time) * 2 * pi / 365.25)))
+}
+
+## single patch
+SIR.onepatch <- function(t, state, parms) {
+    with(as.list(parms), {
+
+        beta <- beta.varT(t,b.mean=R0*gamma,b.amp=beta.amp)
+        S <- state[names(state)=="S"]
+        I <- state[names(state)=="I"]
+        R <- state[names(state)=="R"]
+        dS <- -S * (1 - C * epsilon) * beta * I / N
+        dI <- S * (1 - C * epsilon) * beta * I / N - gamma*I
+        dR <- gamma*I
+
+        return(list(c(dS, dI, dR)))
+    })
+}
+
+## two patch model
+SIR.twopatch <- function(t, state, parms) {
+    with(as.list(parms), {
+
+        beta <- beta.varT(t,b.mean=R0*gamma,b.amp=beta.amp)
+        S <- state[names(state)=="S"]
+        I <- state[names(state)=="I"]
+        R <- state[names(state)=="R"]
+        dS <- -S*(rho.ij %*% ((1-C*epsilon)*beta*I/N))
+        dI <- S*(rho.ij %*% ((1-C*epsilon)*beta*I/N)) - gamma*I
+        dR <- gamma*I
+
+        return(list(c(dS, dI, dR)))
+    })
+}
+
+## single patch
+SIR.onepatch.births <- function(t, state, parms) {
+    with(as.list(parms), {
+
+        beta <- beta.varT(t,b.mean=R0*gamma,b.amp=beta.amp,offset=offset)
+        S <- state[names(state)=="S"]
+        I <- state[names(state)=="I"]
+        R <- state[names(state)=="R"]
+        cum.inc <- state[names(state)=="cum.inc"]
+        dS <- -S * (1 - C * epsilon) * beta * I / N + mu * (I + R)
+        dI <- S * (1 - C * epsilon) * beta * I / N - gamma*I - mu*I
+        dR <- gamma*I - mu*R
+        dcum.inc <- S * (1 - C * epsilon) * beta * I / N
+
+        return(list(c(dS, dI, dR, dcum.inc)))
+    })
+}
+
+## two patch model
+SIR.twopatch.births <- function(t, state, parms) {
+    with(as.list(parms), {
+
+        beta <- beta.varT(t,b.mean=R0*gamma,b.amp=beta.amp,offset=offset)
+        S <- state[names(state)=="S"]
+        I <- state[names(state)=="I"]
+        R <- state[names(state)=="R"]
+        cum.inc <- state[names(state)=="cum.inc"]
+        dS <- -S*(rho.ij %*% ((1-C*epsilon)*beta*I/N)) + mu * (I + R)
+        dI <- S*(rho.ij %*% ((1-C*epsilon)*beta*I/N)) - gamma*I - mu*I
+        dR <- gamma*I - mu*R
+        dcum.inc <- S*(rho.ij %*% ((1-C*epsilon)*beta*I/N))
+
+        return(list(c(dS, dI, dR, dcum.inc)))
+    })
+}
