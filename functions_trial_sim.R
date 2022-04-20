@@ -199,3 +199,41 @@ SIR.twopatch.births <- function(t, state, parms) {
         return(list(c(dS, dI, dR, dcum.inc)))
     })
 }
+
+## single patch
+SIR.onepatch.births.varC <- function(t, state, parms,C.fn) {
+    with(as.list(parms), {
+
+        beta <- beta.varT(t,b.mean=R0*gamma,b.amp=beta.amp,offset=offset)
+        C <- C.fn(t)
+        S <- state[names(state)=="S"]
+        I <- state[names(state)=="I"]
+        R <- state[names(state)=="R"]
+        cum.inc <- state[names(state)=="cum.inc"]
+        dS <- -S * (1 - C * epsilon) * beta * I / N + mu * (I + R)
+        dI <- S * (1 - C * epsilon) * beta * I / N - gamma*I - mu*I
+        dR <- gamma*I - mu*R
+        dcum.inc <- S * (1 - C * epsilon) * beta * I / N
+
+        return(list(c(dS, dI, dR, dcum.inc)))
+    })
+}
+
+## two patch model
+SIR.twopatch.births.varC <- function(t, state, parms, Ct.fn, Cc.fn) {
+    with(as.list(parms), {
+
+        beta <- beta.varT(t,b.mean=R0*gamma,b.amp=beta.amp,offset=offset)
+        C <- c(Ct.fn(t),Cc.fn(t))
+        S <- state[names(state)=="S"]
+        I <- state[names(state)=="I"]
+        R <- state[names(state)=="R"]
+        cum.inc <- state[names(state)=="cum.inc"]
+        dS <- -S*(rho.ij %*% ((1-C*epsilon)*beta*I/N)) + mu * (I + R)
+        dI <- S*(rho.ij %*% ((1-C*epsilon)*beta*I/N)) - gamma*I - mu*I
+        dR <- gamma*I - mu*R
+        dcum.inc <- S*(rho.ij %*% ((1-C*epsilon)*beta*I/N))
+
+        return(list(c(dS, dI, dR, dcum.inc)))
+    })
+}

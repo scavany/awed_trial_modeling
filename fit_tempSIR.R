@@ -118,6 +118,7 @@ model.fit <- optim(par=colMeans(par.bounds),
 save(model.fit,file="tempSIR_optimout.RData")
 
 ## Check it
+load(file="tempSIR_optimout.RData")
 beta.amp <- model.fit$par[["beta.amp"]]
 offset <- model.fit$par[["offset"]]
 underreporting <- model.fit$par[["underreporting"]]
@@ -136,12 +137,16 @@ out[,daily.infections:=actual.incidence*12/365.25*popn.yogyakarta]
 out[,monthly.infections:=sum(daily.infections,na.rm=TRUE),by=yearmonth]
 out.monthly <- out[,.(monthly.infections=sum(daily.infections,na.rm=TRUE)),by=yearmonth
                    ][data,on=.(yearmonth=yearmonth)]
-plot(monthly.infections * underreporting ~ date,data=out.monthly,
-     xlab="Date",ylab="Monthly cases",type="s")
-points(monthly.cases~date,data=data,col="red")
-
-## MCMC fit
-mcmc.length <- 1e3
-bayesianSetup <- createBayesianSetup(LL,lower=as.numeric(par.bounds[1]),
-                                     upper=as.numeric(par.bounds[2]),names=names(par.bounds))
-## mcmc.out <- runMCMC(bayesianSetup,settings=list(iterations=mcmc.length))
+pdf("optim_fit_tempSIR.pdf",width=14)
+plot(x=out.monthly$date,y=rep(NA,nrow(out.monthly)),
+     ylim=c(0,1.1*max(out.monthly$monthly.infections*underreporting,out.monthly$monthly.cases)),
+     xlab="Date",ylab="Monthly cases",
+     bty="n",las=1,yaxs="i")
+polygon(c(out.monthly$date,rev(out.monthly$date)),
+        c(rep(0,nrow(out.monthly)),rev(out.monthly$monthly.infections * underreporting)),
+        col=adjustcolor("grey",0.3),
+        border=FALSE)
+points(monthly.cases~date,data=data,col="red",type="b")
+legend("topright",legend=c("model","data"),fill=c(adjustcolor("grey",0.3),NA),
+       pch=c(NA,1),col=c(NA,"red"),lty=c(NA,1),border=FALSE,bty="n")
+dev.off()
