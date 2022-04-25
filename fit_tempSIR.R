@@ -115,7 +115,7 @@ model.fit <- optim(par=colMeans(par.bounds),
                    method="L-BFGS-B",
                    lower=par.bounds[1],
                    upper=par.bounds[2])
-save(model.fit,file="tempSIR_optimout.RData")
+## save(model.fit,file="tempSIR_optimout.RData")
 
 ## Check it
 load(file="tempSIR_optimout.RData")
@@ -150,3 +150,58 @@ points(monthly.cases~date,data=data,col="red",type="b")
 legend("topright",legend=c("model","data"),fill=c(adjustcolor("grey",0.3),NA),
        pch=c(NA,1),col=c(NA,"red"),lty=c(NA,1),border=FALSE,bty="n")
 dev.off()
+
+## Save ICs for each season
+yearly.ics <- out[yday(date)==1,.(year=year(date),S,I,R)]
+save(yearly.ics,file="yearly_initial_conditions.RData")
+
+
+
+
+## Check mcmc fit
+load(file="tempSIR_mcmcout.RData")
+plot(mcmc.out,start=5000)
+samples = getSample(mcmc.out,start=5e3)
+n.samples <- 100
+subsamples <- samples[sample(nrow(samples),n.samples,replace=TRUE),]
+
+beta.amp.vec <- subsamples[,"beta.amp"]
+offset.vec <- subsamples[,"offset"]
+underreporting.vec <- subsamples[,"underreporting"]
+I0.vec <- subsamples[,"I0"]
+monthly.inf.mat <- matrix(NA,nrow=length(I0.vec),ncol=nrow(out.monthly))
+for (ii in 1:length(I0.vec)){
+    beta.amp <- beta.amp.vec[ii]
+    offset <- offset.vec[ii]
+    underreporting <- underreporting.vec[ii]
+    I0 <-  I0.vec[ii]
+    state.init <- c(S=S0,I=I0,R=1-S0-I0,cum.inc=0)
+    parms <- c(R0=R0,epsilon=0,C=0,N=1,gamma=gamma,beta.amp=beta.amp,mu=mu,offset=offset)
+    out <- as.data.table(ode(state.init,tvec,SIR.onepatch.births,parms))
+    out[,actual.incidence:=c(NA,diff(cum.inc)) * 365.25/12] # convert to monthly incidence
+    out[,date:=time + start.day]
+    out[,month:=format(date,"%m")]
+    out[,year:=format(date,"%y")]
+    out[,yearmonth:=paste0(year,"_",month)]
+    out[,incidence:=actual.incidence * underreporting]
+    out[,daily.infections:=actual.incidence*12/365.25*popn.yogyakarta]
+    out[,monthly.infections:=sum(daily.infections,na.rm=TRUE),by=yearmonth]
+    out.monthly <- out[,.(monthly.infections=sum(daily.infections,na.rm=TRUE)),by=yearmonth
+                       ][data,on=.(yearmonth=yearmonth)]
+    monthly.inf.mat[ii,] <- out.monthly$monthly.infections * underreporting
+}
+
+monthly.inf.mean <- colMeans(monthly.inf.mat)
+monthly.inf.ci <- apply(monthly.inf.mat,2,function(x)quantile(x,c(0,1)))
+
+plot(out.monthly$date,monthly.inf.mean,
+     ylim=c(0,1.1*max(monthly.inf.ci)),
+     xlab="Date",ylab="Monthly cases",
+     bty="n",las=1,yaxs="i",type='l',lwd=1)
+polygon(c(out.monthly$date,rev(out.monthly$date)),
+        c(monthly.inf.ci[1,],rev(monthly.inf.ci[2,])),
+        col=adjustcolor("green",0.5),
+        border=FALSE)
+points(monthly.cases~date,data=data,col="red",type="b")
+legend("topright",legend=c("model","data"),fill=c(adjustcolor("grey",0.3),NA),
+       pch=c(NA,1),col=c(NA,"red"),lty=c(NA,1),border=FALSE,bty="n")
