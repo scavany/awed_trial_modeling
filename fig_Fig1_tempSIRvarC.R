@@ -6,10 +6,10 @@ rm(list = ls())
 
 # install necessary packages
 if(!require(pacman)){install.packages('pacman'); library(pacman)}
-p_load(seqinr, contoureR, imager)
+p_load(seqinr, contoureR, imager, fields)
 
 # load the data 
-load('./fig_1_tempSIRvarC.RData')
+load('./fig_1_tempSIRvarC.RData',verbose=TRUE)
 
 palette <- c('#4FA9BB',
              'paleturquoise')

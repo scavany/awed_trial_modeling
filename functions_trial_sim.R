@@ -132,7 +132,7 @@ beta.varT <- function(time,b.mean,b.amp,offset=2.8*365.25/8) {
     return(b.mean * (1 + b.amp * sin((offset + time) * 2 * pi / 365.25)))
 }
 
-## single patch
+## single patch without births
 SIR.onepatch <- function(t, state, parms) {
     with(as.list(parms), {
 
@@ -148,7 +148,7 @@ SIR.onepatch <- function(t, state, parms) {
     })
 }
 
-## two patch model
+## two patch model without births
 SIR.twopatch <- function(t, state, parms) {
     with(as.list(parms), {
 
@@ -200,7 +200,7 @@ SIR.twopatch.births <- function(t, state, parms) {
     })
 }
 
-## single patch
+## single patch with variable wMel
 SIR.onepatch.births.varC <- function(t, state, parms,C.fn) {
     with(as.list(parms), {
 
@@ -219,7 +219,7 @@ SIR.onepatch.births.varC <- function(t, state, parms,C.fn) {
     })
 }
 
-## two patch model
+## two patch model with variable wMel freq
 SIR.twopatch.births.varC <- function(t, state, parms, Ct.fn, Cc.fn) {
     with(as.list(parms), {
 
@@ -235,5 +235,155 @@ SIR.twopatch.births.varC <- function(t, state, parms, Ct.fn, Cc.fn) {
         dcum.inc <- S*(rho.ij %*% ((1-C*epsilon)*beta*I/N))
 
         return(list(c(dS, dI, dR, dcum.inc)))
+    })
+}
+
+## one patch model with serotypes
+SIR.onepatch.births.sero <- function(t, state, parms) {
+    with(as.list(parms), {
+
+        beta <- beta.varT(t,b.mean=R0*gamma,b.amp=beta.amp,offset=offset)
+        S4 <- state[names(state)=="S4"]
+        I3 <- state[names(state)=="I3"]
+        R3 <- state[names(state)=="R3"]
+        S3 <- state[names(state)=="S3"]
+        I2 <- state[names(state)=="I2"]
+        R2 <- state[names(state)=="R2"]
+        S2 <- state[names(state)=="S2"]
+        I1 <- state[names(state)=="I1"]
+        R1 <- state[names(state)=="R1"]
+        S1 <- state[names(state)=="S1"]
+        I0 <- state[names(state)=="I0"]
+        R0 <- state[names(state)=="R0"]
+        cum.inc <- state[names(state)=="cum.inc"]
+        I <- I3 + I2 + I1 + I0 
+        dS4 <- mu * (1 - S4) - S4 * (1 - C * epsilon) * beta * I / N * 4/4
+        dI3 <- S4 * (1 - C * epsilon) * beta * I / N * 4/4 - (gamma + mu)*I3
+        dR3 <- gamma*I3 - (gamma.wan + mu)*R3
+        dS3 <- gamma.wan*R3 - S3 * (1 - C * epsilon) * beta * I / N * 3/4 - mu*S3
+        dI2 <- S3 * (1 - C * epsilon) * beta * I / N * 3/4 - (gamma + mu)*I2
+        dR2 <- gamma*I2 - (gamma.wan + mu)*R2
+        dS2 <- gamma.wan*R2 - S2 * (1 - C * epsilon) * beta * I / N * 2/4 - mu*S2 
+        dI1 <- S2 * (1 - C * epsilon) * beta * I / N * 2/4 - (gamma + mu)*I1
+        dR1 <- gamma*I1 - (gamma.wan + mu)*R1
+        dS1 <- gamma.wan*R1 - S1 * (1 - C * epsilon) * beta * I / N * 1/4 - mu*S1 
+        dI0 <- S1 * (1 - C * epsilon) * beta * I / N * 1/4 - (gamma + mu)*I0
+        dR0 <- gamma*I0 - mu*R0
+        dcum.inc <- (S4 * 4/4 + S3 * 3/4 + S2 * 2/4 + S1 * 1/4) * (1 - C * epsilon) * beta * I / N
+
+        return(list(c(dS4, dI3, dR3, dS3, dI2, dR2, dS2, dI1, dR1, dS1, dI0, dR0, dcum.inc)))
+    })
+}
+
+## two patch model with serotypes 
+SIR.twopatch.births.sero <- function(t, state, parms) {
+    with(as.list(parms), {
+
+        beta <- beta.varT(t,b.mean=R0*gamma,b.amp=beta.amp,offset=offset)
+        S4 <- state[names(state)=="S4"]
+        I3 <- state[names(state)=="I3"]
+        R3 <- state[names(state)=="R3"]
+        S3 <- state[names(state)=="S3"]
+        I2 <- state[names(state)=="I2"]
+        R2 <- state[names(state)=="R2"]
+        S2 <- state[names(state)=="S2"]
+        I1 <- state[names(state)=="I1"]
+        R1 <- state[names(state)=="R1"]
+        S1 <- state[names(state)=="S1"]
+        I0 <- state[names(state)=="I0"]
+        R0 <- state[names(state)=="R0"]
+        cum.inc <- state[names(state)=="cum.inc"]
+        I <- I3 + I2 + I1 + I0
+        dS4 <-  mu * (1 - S4) - S4 * (rho.ij %*% ((1-C*epsilon)*beta*I/N)) * 4/4
+        dI3 <- S4 * (rho.ij %*% ((1-C*epsilon)*beta*I/N)) * 4/4 - (gamma + mu)*I3
+        dR3 <- gamma*I3 - (gamma.wan + mu)*R3
+        dS3 <- gamma.wan*R3 - S3 * (rho.ij %*% ((1-C*epsilon)*beta*I/N)) * 3/4 - mu*S3
+        dI2 <- S3 * (rho.ij %*% ((1-C*epsilon)*beta*I/N)) * 3/4 - (gamma + mu)*I2
+        dR2 <- gamma*I2 - (gamma.wan + mu)*R2
+        dS2 <- gamma.wan*R2 - S2 * (rho.ij %*% ((1-C*epsilon)*beta*I/N)) * 2/4 - mu*S2 
+        dI1 <- S2 * (rho.ij %*% ((1-C*epsilon)*beta*I/N)) * 2/4 - (gamma + mu)*I1
+        dR1 <- gamma*I1 - (gamma.wan + mu)*R1
+        dS1 <- gamma.wan*R1 - S1 * (rho.ij %*% ((1-C*epsilon)*beta*I/N)) * 1/4 - mu*S1 
+        dI0 <- S1 * (rho.ij %*% ((1-C*epsilon)*beta*I/N)) * 1/4 - (gamma + mu)*I0
+        dR0 <- gamma*I0 - mu*R0
+        dcum.inc <- (S4 * 4/4 + S3 * 3/4 + S2 * 2/4 + S1 * 1/4) * (rho.ij %*% ((1-C*epsilon)*beta*I/N))
+
+        return(list(c(dS4, dI3, dR3, dS3, dI2, dR2, dS2, dI1, dR1, dS1, dI0, dR0, dcum.inc)))
+    })
+}
+
+
+## single patch with serotypes and variable wMel
+SIR.onepatch.births.varC.sero <- function(t, state, parms,C.fn) {
+    with(as.list(parms), {
+        beta <- beta.varT(t,b.mean=R0*gamma,b.amp=beta.amp,offset=offset)
+        C <- C.fn(t)
+        S4 <- state[names(state)=="S4"]
+        I3 <- state[names(state)=="I3"]
+        R3 <- state[names(state)=="R3"]
+        S3 <- state[names(state)=="S3"]
+        I2 <- state[names(state)=="I2"]
+        R2 <- state[names(state)=="R2"]
+        S2 <- state[names(state)=="S2"]
+        I1 <- state[names(state)=="I1"]
+        R1 <- state[names(state)=="R1"]
+        S1 <- state[names(state)=="S1"]
+        I0 <- state[names(state)=="I0"]
+        R0 <- state[names(state)=="R0"]
+        cum.inc <- state[names(state)=="cum.inc"]
+        I <- I3 + I2 + I1 + I0 
+        dS4 <-  mu * (1 - S4) - S4 * (1 - C * epsilon) * beta * I / N * 4/4
+        dI3 <- S4 * (1 - C * epsilon) * beta * I / N * 4/4 - (gamma + mu)*I3
+        dR3 <- gamma*I3 - (gamma.wan + mu)*R3
+        dS3 <- gamma.wan*R3 - S3 * (1 - C * epsilon) * beta * I / N * 3/4 - mu*S3
+        dI2 <- S3 * (1 - C * epsilon) * beta * I / N * 3/4 - (gamma + mu)*I2
+        dR2 <- gamma*I2 - (gamma.wan + mu)*R2
+        dS2 <- gamma.wan*R2 - S2 * (1 - C * epsilon) * beta * I / N * 2/4 - mu*S2 
+        dI1 <- S2 * (1 - C * epsilon) * beta * I / N * 2/4 - (gamma + mu)*I1
+        dR1 <- gamma*I1 - (gamma.wan + mu)*R1
+        dS1 <- gamma.wan*R1 - S1 * (1 - C * epsilon) * beta * I / N * 1/4 - mu*S1 
+        dI0 <- S1 * (1 - C * epsilon) * beta * I / N * 1/4 - (gamma + mu)*I0
+        dR0 <- gamma*I0 - mu*R0
+        dcum.inc <- (S4 * 4/4 + S3 * 3/4 + S2 * 2/4 + S1 * 1/4) * (1 - C * epsilon) * beta * I / N
+
+        return(list(c(dS4, dI3, dR3, dS3, dI2, dR2, dS2, dI1, dR1, dS1, dI0, dR0, dcum.inc)))
+    })
+}
+
+## two patch model  with serotypes and variable wMel
+SIR.twopatch.births.varC.sero <- function(t, state, parms, Ct.fn, Cc.fn) {
+    with(as.list(parms), {
+
+        beta <- beta.varT(t,b.mean=R0*gamma,b.amp=beta.amp,offset=offset)
+        C <- c(Ct.fn(t),Cc.fn(t))
+        S4 <- state[names(state)=="S4"]
+        I3 <- state[names(state)=="I3"]
+        R3 <- state[names(state)=="R3"]
+        S3 <- state[names(state)=="S3"]
+        I2 <- state[names(state)=="I2"]
+        R2 <- state[names(state)=="R2"]
+        S2 <- state[names(state)=="S2"]
+        I1 <- state[names(state)=="I1"]
+        R1 <- state[names(state)=="R1"]
+        S1 <- state[names(state)=="S1"]
+        I0 <- state[names(state)=="I0"]
+        R0 <- state[names(state)=="R0"]
+        cum.inc <- state[names(state)=="cum.inc"]
+        I <- I3 + I2 + I1 + I0
+        dS4 <-  mu * (1 - S4) - S4 * (rho.ij %*% ((1-C*epsilon)*beta*I/N)) * 4/4
+        dI3 <- S4 * (rho.ij %*% ((1-C*epsilon)*beta*I/N)) * 4/4 - (gamma + mu)*I3
+        dR3 <- gamma*I3 - (gamma.wan + mu)*R3
+        dS3 <- gamma.wan*R3 - S3 * (rho.ij %*% ((1-C*epsilon)*beta*I/N)) * 3/4 - mu*S3
+        dI2 <- S3 * (rho.ij %*% ((1-C*epsilon)*beta*I/N)) * 3/4 - (gamma + mu)*I2
+        dR2 <- gamma*I2 - (gamma.wan + mu)*R2
+        dS2 <- gamma.wan*R2 - S2 * (rho.ij %*% ((1-C*epsilon)*beta*I/N)) * 2/4 - mu*S2 
+        dI1 <- S2 * (rho.ij %*% ((1-C*epsilon)*beta*I/N)) * 2/4 - (gamma + mu)*I1
+        dR1 <- gamma*I1 - (gamma.wan + mu)*R1
+        dS1 <- gamma.wan*R1 - S1 * (rho.ij %*% ((1-C*epsilon)*beta*I/N)) * 1/4 - mu*S1 
+        dI0 <- S1 * (rho.ij %*% ((1-C*epsilon)*beta*I/N)) * 1/4 - (gamma + mu)*I0
+        dR0 <- gamma*I0 - mu*R0
+        dcum.inc <- (S4 * 4/4 + S3 * 3/4 + S2 * 2/4 + S1 * 1/4) * (rho.ij %*% ((1-C*epsilon)*beta*I/N))
+
+        return(list(c(dS4, dI3, dR3, dS3, dI2, dR2, dS2, dI1, dR1, dS1, dI0, dR0, dcum.inc)))
     })
 }

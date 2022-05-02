@@ -73,3 +73,20 @@ calc.prop.susc.ci <- function(age.dist, FOI, inv.cross.im)
   prop.susc.ci <- sum(seroprob.ci[,2] * prop.by.age) + (3/4) * sum(seroprob.ci[,4] * prop.by.age) + (2/4) * sum(seroprob.ci[,6] * prop.by.age) + (1/4) * sum(seroprob.ci[,8] * prop.by.age)
   return(prop.susc.ci)
 }
+
+calc.prop.susc.noci.byvalency <- function(age.dist, FOI)
+{
+  seroprob.noci <- ode(c(1,rep(0,4)),age.dist[,1], prop.exposed.model.noci,parms=c(FOI))
+  prop.by.age <- age.dist[,2] / sum(age.dist[,2])
+  prop.susc.noci <- seroprob.ci[,2:6] * prop.by.age
+  return(colSums(prop.susc.noci))
+}
+
+calc.prop.susc.ci.byvalency <- function(age.dist, FOI, inv.cross.im)
+{
+  seroprob.ci <- ode(c(1,rep(0,8)),age.dist[,1], prop.exposed.model.ci,parms=c(FOI,inv.cross.im))
+  prop.by.age <- age.dist[,2] / sum(age.dist[,2])
+  prop.susc.ci <- seroprob.ci[,2:10] * prop.by.age
+  colnames(prop.susc.ci) <- c("Zero","OneCI","One","TwoCI","Two","ThreeCI","Three","FourCI","Four")
+  return(colSums(prop.susc.ci))
+}
