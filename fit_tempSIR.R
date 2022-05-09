@@ -15,7 +15,7 @@ source('functions_trial_sim.R')
 source('functions_immune_history.R')
 
 ## Control parms
-fit.model <- FALSE
+fit.model <- TRUE
 save.fit <- FALSE
 regenerate.plot <- FALSE
 
@@ -25,12 +25,15 @@ start.day <- as.Date("2006-01-01")
 data <- fread("./yogyakarta_dengue_incidence.csv")
 data[,day:=floor(day+0.5)]
 data[,incidence:=incidence/1e5]
-data[,monthly.cases:=floor(incidence * popn.yogyakarta+0.5)]
 data[,date:=day + start.day]
 data[,month:=format(date,"%m")]
 data[,year:=format(date,"%y")]
 data[,yearmonth:=paste0(year,"_",month)]
-##plot(incidence~date,data=data,type='b',xlab="Date",ylab="Incidence")
+data[,average:=mean(incidence),by=month]
+data[,monthly.cases:=floor(incidence * popn.yogyakarta+0.5)]
+data[,avg.monthly.cases:=floor(average * popn.yogyakarta+0.5)]
+plot(incidence~date,data=data,type='b',xlab="Date",ylab="Incidence")
+lines(average~date,data=data,col='red',lty=2,lwd=2)
 
 ## Parameters
 load("foi_and_r0.RData")
@@ -56,7 +59,7 @@ gamma = 1/7#recovery rate
 gamma.wan <- gamma * (inv.cross.im/365.25) / (gamma - inv.cross.im/365.25) #CI waning rate
 prop.I <- gamma.wan/(gamma + gamma.wan) # proportion CI that are in the I compartment
 beta.amp = 0.3 #seasonal amplitude in beta (proportional)
-tvec <- seq(-366*11,366*11,1)
+tvec <- seq(-366*80,366*11,1)
 ## I0 <- data$incidence[1]
 mu <- 1/(life.expectancy*365.25)
 underreporting <- 0.1
@@ -71,9 +74,9 @@ parms <- c(R0=R0,epsilon=0,C=0,N=1,gamma=gamma,gamma.wan=gamma.wan,
 
 ## Fit to data
 ## Vary amplitude, offset, underreporting, and starting prevalence
-beta.amp.bounds <- c(0.1,0.3)
-offset.bounds <- c(0,365.25/2)
-underreporting.bounds <- c(0.01,1)
+beta.amp.bounds <- c(0,0.2)
+offset.bounds <- c(0,180)
+underreporting.bounds <- c(0.01,0.2)
 ## R0.bounds <- c(R0,2*R0)
 ## I0.bounds <- range(data$incidence) * 12 / 365.25 / gamma
 par.bounds <- data.table(beta.amp=beta.amp.bounds,
@@ -102,7 +105,7 @@ NLL <- function(par) {
     out[,monthly.infections:=sum(daily.infections,na.rm=TRUE),by=yearmonth]
     out.monthly <- out[,.(monthly.infections=sum(daily.infections,na.rm=TRUE)),by=yearmonth
                    ][data,on=.(yearmonth=yearmonth)]
-    return(-sum(dpois(out.monthly$monthly.cases,
+    return(-sum(dpois(out.monthly$avg.monthly.cases,
                       out.monthly$monthly.infections * underreporting,
                       log=TRUE)))
 }
@@ -116,10 +119,11 @@ if (fit.model){
                        lower=par.bounds[1],
                        upper=par.bounds[2])
     if(save.fit) save(model.fit,file="tempSIR_optimout.RData")
+} else {
+    load(file="tempSIR_optimout.RData")
 }
 
 ## Check it
-load(file="tempSIR_optimout.RData")
 beta.amp <- model.fit$par[["beta.amp"]]
 offset <- model.fit$par[["offset"]]
 underreporting <- model.fit$par[["underreporting"]]
@@ -127,6 +131,9 @@ underreporting <- model.fit$par[["underreporting"]]
 ## I0 <- model.fit$par[["I0"]]
 
 ## state.init <- c(S=S0,I=I0,R=1-S0-I0,cum.inc=0)
+## parms <- c(R0=R0,epsilon=0,C=0,N=1,gamma=gamma,gamma.wan=gamma.wan,
+##            beta.amp=0.063,mu=mu,offset=90)
+## underreporting <- 0.058
 parms <- c(R0=R0,epsilon=0,C=0,N=1,gamma=gamma,gamma.wan=gamma.wan,
            beta.amp=beta.amp,mu=mu,offset=offset)
 out <- as.data.table(ode(state.init,tvec,SIR.onepatch.births.sero,parms))
@@ -140,6 +147,7 @@ out[,daily.infections:=actual.incidence*12/365.25*popn.yogyakarta]
 out[,monthly.infections:=sum(daily.infections,na.rm=TRUE),by=yearmonth]
 out.monthly <- out[,.(monthly.infections=sum(daily.infections,na.rm=TRUE)),by=yearmonth
                    ][data,on=.(yearmonth=yearmonth)]
+
 if (regenerate.plot) pdf("optim_fit_tempSIR.pdf",width=14)
 plot(x=out.monthly$date,y=rep(NA,nrow(out.monthly)),
      ylim=c(0,1.1*max(out.monthly$monthly.infections*underreporting,out.monthly$monthly.cases)),
@@ -147,11 +155,12 @@ plot(x=out.monthly$date,y=rep(NA,nrow(out.monthly)),
      bty="n",las=1,yaxs="i")
 polygon(c(out.monthly$date,rev(out.monthly$date)),
         c(rep(0,nrow(out.monthly)),rev(out.monthly$monthly.infections * underreporting)),
-        col=adjustcolor("grey",0.3),
+        col=adjustcolor("grey",0.5),
         border=FALSE)
-points(monthly.cases~date,data=data,col="red",type="b")
-legend("topright",legend=c("model","data"),fill=c(adjustcolor("grey",0.3),NA),
-       pch=c(NA,1),col=c(NA,"red"),lty=c(NA,1),border=FALSE,bty="n")
+points(avg.monthly.cases~date,data=data,col="red",type="b",lwd=2)
+points(monthly.cases~date,data=data,col=adjustcolor("red",0.3),type="b",lwd=0.5)
+legend("topright",legend=c("model","data - averaged","data - raw"),fill=c(adjustcolor("grey",0.5),rep(NA,2)),
+       pch=c(NA,1,1),col=c(NA,"red",adjustcolor("red",0.3)),lty=c(NA,1,1),border=FALSE,bty="n",lwd=c(NA,2,0.5))
 if (regenerate.plot) dev.off()
 
 ## Save ICs for each season

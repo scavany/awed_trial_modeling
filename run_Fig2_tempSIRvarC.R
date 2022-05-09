@@ -26,6 +26,10 @@ Ct.fn <- approxfun(as.numeric(Ct.mean$Date - min(Ct.mean$Date)),Ct.mean$wMel.mea
 Cc.fn <- approxfun(as.numeric(Cc.mean$Date - min(Cc.mean$Date)),Cc.mean$wMel.mean)
 wMel.start.date <- min(Ct$Date)
 
+## Functions for population weighted human movement
+Ct.hummoz.fn <- function(t) Ct.fn(t)*rho.tt + Cc.fn(t)*rho.tc
+Cc.hummoz.fn <- function(t) Cc.fn(t)*rho.cc + Ct.fn(t)*rho.ct
+
 # load the age distribution 
 pop.age = read.csv('./pop_by_age_Indonesia.csv')
 age.dist = cbind(
@@ -62,8 +66,8 @@ mu <- 1/(life.expectancy*365.25) #mortality rate
 tvec.full <- seq(-1,366*11,1)
 day0 <- as.Date("2006-01-01")
 dvec <- tvec.full + day0
-start.date <- as.Date("2006-01-01"); end.date <- as.Date("2007-12-31")
-tvec <- tvec.full[which(dvec >= start.date & dvec <= end.date)]
+start.date <- as.Date("2015-01-01"); end.date <- as.Date("2016-12-31")
+tvec <- 0:(end.date-start.date)##tvec.full[which(dvec >= start.date & dvec <= end.date)]
 load("./tempSIR_optimout.RData",verbose=TRUE)
 beta.amp <- model.fit$par[["beta.amp"]]
 offset <- model.fit$par[["offset"]]
@@ -73,6 +77,7 @@ names(state.init) <- colnames(yearly.ics)[-1]
 state.init["cum.inc"] <- 0
 
 # look at effect on IAR 
+load("fig_1_tempSIRvarC.RData")
 rho.vec = seq(0.8,1,by=0.001)
 b.98 = 10
 b.90 = which.min(abs(rho.vec-0.90))
@@ -81,12 +86,12 @@ epsilon.vec = seq(0,1,by=0.005)
 Nt = 1
 delta  = 1e3
 Nc = Nc_checker(delta)
-rho.tt = rho_tt_checker(44,delta)
-rho.cc = rho_cc_checker(44,delta)
+rho.tt = rho_tt_checker(b.match,delta)
+rho.cc = rho_cc_checker(b.match,delta)
 rho.tc = 1 - rho.tt
 rho.ct = 1 - rho.cc
 IAR.bestcase = IAR.mosquito = IAR.human = IAR.hummoz = IAR.humsupp = IAR.fullmodel = matrix(0,2,length(epsilon.vec))
-## S.f.bestcase = S.f.mosquito = S.f.human = S.f.fullmodel = matrix(0,2,length(epsilon.vec))
+## IAR.hummoz.old = IAR.human.old = IAR.bestcase
 
 for(jj in 1:length(epsilon.vec)){
   print(jj)
@@ -102,9 +107,18 @@ for(jj in 1:length(epsilon.vec)){
                         beta.amp=beta.amp,
                         mu=mu,offset=offset)
   IAR.bestcase[2,jj] <- max(as.data.frame(ode(state.c.bestcase,tvec,SIR.onepatch.births.sero,parms.c.bestcase))$cum.inc)
-  ## S.f.bestcase[1,jj] <- S0 - IAR.bestcase[1,jj]
-  ## S.f.bestcase[2,jj] <- S0 - IAR.bestcase[2,jj]
   
+  state.t.human <- state.init
+  parms.t.human <- c(R0=R0,epsilon=epsilon,C=rho.tt,N=1,gamma=gamma,gamma.wan=gamma.wan,
+                     beta.amp=beta.amp,
+                     mu=mu,offset=offset)
+  IAR.human[1,jj] <- max(as.data.frame(ode(state.t.human,tvec,SIR.onepatch.births.sero,parms.t.human))$cum.inc)
+  state.c.human <- state.init
+  parms.c.human <- c(R0=R0,epsilon=epsilon,C=rho.ct,N=1,gamma=gamma,gamma.wan=gamma.wan,
+                     beta.amp=beta.amp,
+                     mu=mu,offset=offset)
+  IAR.human[2,jj] <- max(as.data.frame(ode(state.c.human,tvec,SIR.onepatch.births.sero,parms.c.human))$cum.inc)
+
   state.t.mosquito <- state.init
   parms.t.mosquito <- c(R0=R0,epsilon=epsilon,N=1,gamma=gamma,gamma.wan=gamma.wan,
                         beta.amp=beta.amp,
@@ -115,16 +129,17 @@ for(jj in 1:length(epsilon.vec)){
                         beta.amp=beta.amp,
                         mu=mu,offset=offset)
   IAR.mosquito[2,jj] <- max(as.data.frame(ode(state.c.mosquito,tvec,SIR.onepatch.births.varC.sero,parms.c.mosquito,C.fn=Cc.fn))$cum.inc)
-  ## S.f.mosquito[1,jj] <- S0 - IAR.mosquito[1,jj]
-  ## S.f.mosquito[2,jj] <- S0 - IAR.mosquito[2,jj]
-
-  IAR.human[1,jj] <- IAR.bestcase[1,jj] * rho.tt + IAR.bestcase[2,jj] * rho.tc
-  IAR.human[2,jj] <- IAR.bestcase[2,jj] * rho.cc + IAR.bestcase[1,jj] * rho.ct
   
-  IAR.hummoz[1,jj] <- IAR.mosquito[1,jj] * rho.tt + IAR.mosquito[2,jj] * rho.tc
-  IAR.hummoz[2,jj] <- IAR.mosquito[2,jj] * rho.cc + IAR.mosquito[1,jj] * rho.ct
-  ## S.f.human[1,jj] <- S0 - IAR.human[1,jj]
-  ## S.f.human[2,jj] <- S0 - IAR.human[2,jj]
+  state.t.hummoz <- state.init
+  parms.t.hummoz <- c(R0=R0,epsilon=epsilon,N=1,gamma=gamma,gamma.wan=gamma.wan,
+                      beta.amp=beta.amp,
+                      mu=mu,offset=offset)
+  IAR.hummoz[1,jj] <- max(as.data.frame(ode(state.t.hummoz,tvec,SIR.onepatch.births.varC.sero,parms.t.hummoz,C.fn=Ct.hummoz.fn))$cum.inc)
+  state.c.hummoz <- state.init
+  parms.c.hummoz <- c(R0=R0,epsilon=epsilon,N=1,gamma=gamma,gamma.wan=gamma.wan,
+                      beta.amp=beta.amp,
+                      mu=mu,offset=offset)
+  IAR.hummoz[2,jj] <- max(as.data.frame(ode(state.c.hummoz,tvec,SIR.onepatch.births.varC.sero,parms.c.hummoz,C.fn=Cc.hummoz.fn))$cum.inc)
   
   state.humsupp <- rep(state.init,each=2)
   parms.humsupp <- list(R0=R0,epsilon=epsilon,C=c(1,0),N=1,gamma=gamma,gamma.wan=gamma.wan,
@@ -134,8 +149,6 @@ for(jj in 1:length(epsilon.vec)){
   out.temp <- as.data.frame(ode(state.humsupp,tvec,SIR.twopatch.births.sero,parms.humsupp))
   IAR.humsupp[,jj] <- apply(out.temp[names(out.temp)=="cum.inc"],2,max)
 
-  ## S.f.fullmodel[1,jj] <- S0 - IAR.fullmodel[1,jj]
-  ## S.f.fullmodel[2,jj] <- S0 - IAR.fullmodel[2,jj]
   state.fullmodel <- rep(state.init,each=2)
   parms.fullmodel <- list(R0=R0,epsilon=epsilon,N=1,gamma=gamma,gamma.wan=gamma.wan,
                         beta.amp=beta.amp,
@@ -143,6 +156,12 @@ for(jj in 1:length(epsilon.vec)){
                         rho.ij=matrix(c(rho.tt,rho.tc,rho.ct,rho.cc),ncol = 2, byrow = T))
   out.temp <- as.data.frame(ode(state.fullmodel,tvec,SIR.twopatch.births.varC.sero,parms.fullmodel,Ct.fn=Ct.fn,Cc.fn=Cc.fn))
   IAR.fullmodel[,jj] <- apply(out.temp[names(out.temp)=="cum.inc"],2,max)
+
+  ## Old method
+  ## IAR.human.old[1,jj] <- IAR.bestcase[1,jj] * rho.tt + IAR.bestcase[2,jj] * rho.tc
+  ## IAR.human.old[2,jj] <- IAR.bestcase[2,jj] * rho.cc + IAR.bestcase[1,jj] * rho.ct
+  ## IAR.hummoz.old[1,jj] <- IAR.mosquito[1,jj] * rho.tt + IAR.mosquito[2,jj] * rho.tc
+  ## IAR.hummoz.old[2,jj] <- IAR.mosquito[2,jj] * rho.cc + IAR.mosquito[1,jj] * rho.ct
 }
 
 # compute efficacy
@@ -163,12 +182,18 @@ efficacy.human <- 1 - (IAR.human[1,] / IAR.human[2,]) * (1 - IAR.human[2,]) / (1
 efficacy.hummoz <- 1 - (IAR.hummoz[1,] / IAR.hummoz[2,]) * (1 - IAR.hummoz[2,]) / (1 - IAR.hummoz[1,])
 efficacy.humsupp <- 1 - (IAR.humsupp[1,] / IAR.humsupp[2,]) * (1 - IAR.humsupp[2,]) / (1 - IAR.humsupp[1,])
 efficacy.fullmodel <- 1 - (IAR.fullmodel[1,] / IAR.fullmodel[2,]) * (1 - IAR.fullmodel[2,]) / (1 - IAR.fullmodel[1,])
+## efficacy.human.old <- 1 - (IAR.human.old[1,] / IAR.human.old[2,]) * (1 - IAR.human.old[2,]) / (1 - IAR.human.old[1,])
+## efficacy.hummoz.old <- 1 - (IAR.hummoz.old[1,] / IAR.hummoz.old[2,]) * (1 - IAR.hummoz.old[2,]) / (1 - IAR.hummoz.old[1,])
 
 # compute the fraction of the bias attributable to each phenomenon
 # assuming the following embedding, in this case: bestcase -> human -> hummoz -> fullmodel
 frac.bias.human <-  (efficacy.bestcase - efficacy.human) / (efficacy.bestcase - efficacy.fullmodel)
 frac.bias.hummoz <- (efficacy.human - efficacy.hummoz) / (efficacy.bestcase - efficacy.fullmodel)
 frac.bias.fullmodel <- 1 - frac.bias.hummoz - frac.bias.human
+## frac.bias.human.old <-  (efficacy.bestcase - efficacy.human.old) / (efficacy.bestcase - efficacy.fullmodel)
+## frac.bias.hummoz.old <- (efficacy.human.old - efficacy.hummoz.old) / (efficacy.bestcase - efficacy.fullmodel)
+## frac.bias.fullmodel.old <- 1 - frac.bias.hummoz.old - frac.bias.human.old
+
 
 # save output 
 save(epsilon.vec,
@@ -187,4 +212,11 @@ save(epsilon.vec,
      frac.bias.human,
      frac.bias.hummoz,
      frac.bias.fullmodel,
+     ## IAR.human.old,
+     ## IAR.hummoz.old,
+     ## efficacy.human.old,
+     ## efficacy.hummoz.old,
+     ## frac.bias.human.old,
+     ## frac.bias.hummoz.old,
+     ## frac.bias.fullmodel.old,
      file = './fig_2_tempSIRvarC.RData')

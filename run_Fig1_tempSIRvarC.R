@@ -6,7 +6,7 @@ rm(list = ls())
 
 # install necessary packages
 if(!require(pacman)){install.packages('pacman'); library(pacman)}
-p_load(deSolve,data.table)
+p_load(deSolve,data.table,seqinr)
 
 # load necessary functions
 source('functions_trial_sim.R')
@@ -83,8 +83,8 @@ mu <- 1/(life.expectancy*365.25) #mortality rate
 tvec.full <- seq(-1,366*11,1)
 day0 <- as.Date("2006-01-01") ## Day at which data begins
 dvec <- tvec.full + day0
-start.date <- as.Date("2006-01-01"); end.date <- as.Date("2007-12-31")## Start and end days of "trial"
-tvec <- tvec.full[which(dvec >= start.date & dvec <= end.date)]
+start.date <- as.Date("2015-01-01"); end.date <- as.Date("2016-12-31")## Start and end days of "trial"
+tvec <- 0:(end.date-start.date)##tvec.full[which(dvec >= start.date & dvec <= end.date)]
 load("./tempSIR_optimout.RData",verbose=TRUE)
 beta.amp <- model.fit$par[["beta.amp"]]
 offset <- model.fit$par[["offset"]]
@@ -148,7 +148,9 @@ humsupp.fn <- approxfun(humsupp.lines$x,humsupp.lines$y)
 rho.match <- rho.vec.temp[which.min(abs(fullmodel.fn(rho.vec.temp)-humsupp.fn(rho.vec.temp)))]
 b.vec.temp <- seq(0,1000,0.1)
 b.match <- b.vec.temp[which.min(abs(rho.match-rho_tt_checker(b.vec.temp,1e3)))]
-plot(NA, NA, xlim = c(0.9,0.95), ylim = c(0.6,0.7), axes = F,
+
+pdf("comparing_efficacies.pdf")
+plot(NA, NA, xlim = c(0.9,0.95), ylim = c(0.45,0.55), axes = F,
      xaxs = 'i', yaxs = 'i', xlab = '', ylab = '')
 abline(h = seq(from = 0.5, to = 1, by = 0.1),
        v = seq(from = 0.75, to = 1, by = 0.05),
@@ -161,11 +163,12 @@ contour(rho.implied.vec, epsilon.implied.vec,
         lty = 3, lwd = 1.5, add=  T, drawlabels = TRUE)
 box()
 axis(side = 1, at = seq(from = 0.75, to = 1, by = 0.01), labels = seq(from = 75, to = 100, by = 1))
-axis(side = 2, las = 1, at = seq(from = 0.5, to = 1, by = 0.01), labels = seq(from = 50, to = 100, by = 1))
+axis(side = 2, las = 1, at = seq(from = 0.3, to = 0.7, by = 0.01), labels = seq(from = 30, to = 70, by = 1))
 mtext(side = 1, line = 2.3, expression('Time in allocated arm (%), ' * rho))
 mtext(side = 2, line = 2.3, expression(epsilon * ' needed for observed efficacy'))
 abline(v=rho.match,col="red",lty=3)
 abline(h=c(fullmodel.fn(rho.match),humsupp.fn(rho.match)),col="red",lty=3)
+dev.off()
 
 ## Analysis 2 - How does efficacy change with epsilon? ## 
 epsilon.vec = seq(0,1,by=0.005)
@@ -348,6 +351,8 @@ save(efficacy.epsilon.bestcase,
      efficacy.delta,
      b.vec,
      rho.vec.by.b,
+     rho.match,
+     b.match,
      file = './fig_1_tempSIRvarC.RData')
 
 

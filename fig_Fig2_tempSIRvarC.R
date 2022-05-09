@@ -93,10 +93,10 @@ axis(side = 2, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from = 0, to =
 mtext(side = 1, line = 2.3, expression('Reduction in ' * 'R'[0] * ' (%), ' * epsilon))
 mtext(side = 2, line = 2.3, 'Contribution to bias (%)')
 mtext(side = 3, line = 0, adj = 0, 'B', font = 2)
-text(epsilon.vec[1],0.07,"Human\nmovement",pos=4)
-text(0.18,0.247,"Mosquito movement",
-     pos=4,col="white",srt=10.4)
-text(epsilon.vec[1],0.6,"Transmission\ncoupling",
+text(epsilon.vec[1],0.04,"Human movement",pos=4)
+text(0.11,0.16,"Mosquito movement",
+     pos=4,col="white")
+text(epsilon.vec[1],0.88,"Transmission\ncoupling",
      pos=4,col="white")
 
 dev.off()
