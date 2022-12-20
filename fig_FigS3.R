@@ -8,7 +8,7 @@ rm(list = ls())
 if(!require(seqinr)){install.packages('seqinr'); library(seqinr)}
 
 # load output
-load('./fig_2.RData')
+load('./fig_2_tempSIRvarC.RData')
 
 # specify palette 
 palette <- c('#222222',
@@ -37,11 +37,18 @@ axis(side = 2, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from = 0, to =
 ## mtext(side = 1, line = 2.3, expression('Reduction in ' * 'R'[0] * ' (%), ' * epsilon))
 mtext(side = 2, line = 2.3, 'Contribution to bias (%)')
 mtext(side = 3, line = 0, adj = 0, 'A', font = 2)
-text(epsilon.vec[2],0.09,"Human\nmovement",pos=4)
-text(epsilon.vec[2],0.47,"Mosquito\nmovement",
-     pos=4,col="white")
-text(epsilon.vec[2],0.86,"Transmission\ncoupling",
-     pos=4,col="white")
+mid.index <- as.integer(length(epsilon.vec)/2 + 0.5)
+text(epsilon.vec[mid.index],
+     frac.bias.human[mid.index]/2,
+     "Human movement",adj=0.5)
+text(epsilon.vec[mid.index],
+     frac.bias.human[mid.index] + frac.bias.mosquito[mid.index]/2,
+     "Mosquito movement",
+     adj=0.5,col="white")
+text(epsilon.vec[101],
+     frac.bias.human[mid.index] + frac.bias.mosquito[mid.index] + frac.bias.suppression[mid.index]/2,
+     "Transmission coupling",
+     adj=0.5,col="white")
 
 frac.bias.human <-  (efficacy.bestcase - efficacy.human) / (efficacy.bestcase - efficacy.fullmodel)
 frac.bias.mosquito <- (efficacy.human - efficacy.hummoz) / (efficacy.bestcase - efficacy.fullmodel)
@@ -60,11 +67,18 @@ axis(side = 2, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from = 0, to =
 ## mtext(side = 1, line = 2.3, expression('Reduction in ' * 'R'[0] * ' (%), ' * epsilon))
 mtext(side = 2, line = 2.3, 'Contribution to bias (%)')
 mtext(side = 3, line = 0, adj = 0, 'B', font = 2)
-text(epsilon.vec[2],0.09,"Human\nmovement",pos=4)
-text(epsilon.vec[2],0.47,"Mosquito\nmovement",
-     pos=4,col="white")
-text(epsilon.vec[2],0.86,"Transmission\ncoupling",
-     pos=4,col="white")
+mid.index <- as.integer(length(epsilon.vec)/2 + 0.5)
+text(epsilon.vec[mid.index],
+     frac.bias.human[mid.index]/2,
+     "Human movement",adj=0.5)
+text(epsilon.vec[mid.index],
+     frac.bias.human[mid.index] + frac.bias.mosquito[mid.index]/2,
+     "Mosquito movement",
+     adj=0.5,col="white")
+text(epsilon.vec[101],
+     frac.bias.human[mid.index] + frac.bias.mosquito[mid.index] + frac.bias.suppression[mid.index]/2,
+     "Transmission coupling",
+     adj=0.5,col="white")
 
 frac.bias.human <-  (efficacy.bestcase - efficacy.human) / (efficacy.bestcase - efficacy.fullmodel)
 frac.bias.suppression <- (efficacy.human - efficacy.humsupp) / (efficacy.bestcase - efficacy.fullmodel)
@@ -83,10 +97,17 @@ axis(side = 2, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from = 0, to =
 mtext(side = 1, line = 2.3, expression('Reduction in ' * 'R'[0] * ' (%), ' * epsilon))
 mtext(side = 2, line = 2.3, 'Contribution to bias (%)')
 mtext(side = 3, line = 0, adj = 0, 'C', font = 2)
-text(epsilon.vec[2],0.09,"Human\nmovement",pos=4)
-text(epsilon.vec[2],0.47,"Mosquito\nmovement",
-     pos=4,col="white")
-text(epsilon.vec[2],0.86,"Transmission\ncoupling",
-     pos=4,col="white")
+mid.index <- as.integer(length(epsilon.vec)/2 + 0.5)
+text(epsilon.vec[mid.index],
+     frac.bias.human[mid.index]/2,
+     "Human movement",adj=0.5)
+text(epsilon.vec[mid.index],
+     frac.bias.human[mid.index] + frac.bias.mosquito[mid.index]/2,
+     "Mosquito movement",
+     adj=0.5,col="white")
+text(epsilon.vec[101],
+     frac.bias.human[mid.index] + frac.bias.mosquito[mid.index] + frac.bias.suppression[mid.index]/2,
+     "Transmission coupling",
+     adj=0.5,col="white")
 
 dev.off()

@@ -41,6 +41,7 @@ rr.optim.fn <- function(par) {
 rr.optim.out <- optim(c(1.1,0.134,-6,0.5),rr.optim.fn)
 rr.optim.out$par;rr.optim.out$convergence;
 
+jpeg("adjusted_data_comparison_full.jpg",height=7, width=7, units="in",res=600)
 plot((1:5)/5-0.1,1-data$eff_mean/100,ylim=range(1-data/100),xlim=c(0,1),
      cex=1.5,
      xaxt="n",xlab="wMel exposure index",
@@ -58,6 +59,7 @@ legend("right",bty="n",legend=c("Baseline","Human-movement adjusted"),
 lines(seq(0,1,0.01),
       logistic.fn(seq(0,1,0.01),
                   rr.optim.out$par[1],rr.optim.out$par[2],rr.optim.out$par[3],rr.optim.out$par[4]))
+dev.off()
 
 ## Calculate RR and efficacy between 0 and 1
 rr.full <- logistic.fn(1,rr.optim.out$par[1],rr.optim.out$par[2],rr.optim.out$par[3],rr.optim.out$par[4])/logistic.fn(0,rr.optim.out$par[1],rr.optim.out$par[2],rr.optim.out$par[3],rr.optim.out$par[4])

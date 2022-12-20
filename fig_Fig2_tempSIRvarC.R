@@ -37,12 +37,12 @@ lines(epsilon.vec, efficacy.humsupp, lwd = linewidth, col = palette[2])
 lines(epsilon.vec, efficacy.fullmodel, lwd = linewidth * 2.5, col = palette[4])
 lines(epsilon.vec, efficacy.fullmodel, lwd = linewidth, col = palette[2])
 lines(epsilon.vec, efficacy.fullmodel, lwd = linewidth, col = palette[3],lty="dotted")
-print(approxfun(epsilon.vec, efficacy.bestcase)(0.703))
-print(approxfun(epsilon.vec, efficacy.mosquito)(0.703))
-print(approxfun(epsilon.vec, efficacy.human)(0.703))
-print(approxfun(epsilon.vec, efficacy.hummoz)(0.703))
-print(approxfun(epsilon.vec, efficacy.humsupp)(0.703))
-print(approxfun(epsilon.vec, efficacy.fullmodel)(0.703))
+print(approxfun(epsilon.vec, efficacy.bestcase)(0.499))
+print(approxfun(epsilon.vec, efficacy.mosquito)(0.499))
+print(approxfun(epsilon.vec, efficacy.human)(0.499))
+print(approxfun(epsilon.vec, efficacy.hummoz)(0.499))
+print(approxfun(epsilon.vec, efficacy.humsupp)(0.499))
+print(approxfun(epsilon.vec, efficacy.fullmodel)(0.499))
 box()
 axis(side = 1, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from = 0, to = 100, by = 20))
 axis(side = 2, las = 1, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from = 0, to = 100, by = 20))
@@ -83,9 +83,9 @@ polygon(c(epsilon.vec, rev(epsilon.vec)), c(frac.bias.human, rev(frac.bias.human
 polygon(c(epsilon.vec, rev(epsilon.vec)), c(frac.bias.human + frac.bias.mosquito, rev(frac.bias.mosquito + frac.bias.human + frac.bias.suppression)),
         border = NA, col = palette[4])
 box()
-print(approxfun(epsilon.vec, frac.bias.mosquito)(0.703))
-print(approxfun(epsilon.vec, frac.bias.human)(0.703))
-print(approxfun(epsilon.vec, frac.bias.suppression)(0.703))
+print(approxfun(epsilon.vec, frac.bias.mosquito)(0.499))
+print(approxfun(epsilon.vec, frac.bias.human)(0.499))
+print(approxfun(epsilon.vec, frac.bias.suppression)(0.499))
 print(approxfun(frac.bias.fullmodel,epsilon.vec)(0.1))
 print(approxfun(frac.bias.fullmodel,epsilon.vec)(0.2))
 axis(side = 1, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from = 0, to = 100, by = 20))
@@ -93,10 +93,17 @@ axis(side = 2, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from = 0, to =
 mtext(side = 1, line = 2.3, expression('Reduction in ' * 'R'[0] * ' (%), ' * epsilon))
 mtext(side = 2, line = 2.3, 'Contribution to bias (%)')
 mtext(side = 3, line = 0, adj = 0, 'B', font = 2)
-text(epsilon.vec[1],0.04,"Human movement",pos=4)
-text(0.11,0.16,"Mosquito movement",
-     pos=4,col="white")
-text(epsilon.vec[1],0.88,"Transmission\ncoupling",
-     pos=4,col="white")
+mid.index <- as.integer(length(epsilon.vec)/2 + 0.5)
+text(epsilon.vec[mid.index],
+     frac.bias.human[mid.index]/2,
+     "Human movement",adj=0.5)
+text(epsilon.vec[mid.index],
+     frac.bias.human[mid.index] + frac.bias.mosquito[mid.index]/2,
+     "Mosquito movement",
+     adj=0.5,col="white")
+text(epsilon.vec[101],
+     frac.bias.human[mid.index] + frac.bias.mosquito[mid.index] + frac.bias.suppression[mid.index]/2,
+     "Transmission coupling",
+     adj=0.5,col="white")
 
 dev.off()

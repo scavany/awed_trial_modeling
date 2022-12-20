@@ -91,7 +91,7 @@ rho.cc = rho_cc_checker(b.match,delta)
 rho.tc = 1 - rho.tt
 rho.ct = 1 - rho.cc
 IAR.bestcase = IAR.mosquito = IAR.human = IAR.hummoz = IAR.humsupp = IAR.fullmodel = matrix(0,2,length(epsilon.vec))
-## IAR.hummoz.old = IAR.human.old = IAR.bestcase
+IAR.hummoz.old = IAR.human.old = IAR.bestcase
 
 for(jj in 1:length(epsilon.vec)){
   print(jj)
@@ -158,10 +158,10 @@ for(jj in 1:length(epsilon.vec)){
   IAR.fullmodel[,jj] <- apply(out.temp[names(out.temp)=="cum.inc"],2,max)
 
   ## Old method
-  ## IAR.human.old[1,jj] <- IAR.bestcase[1,jj] * rho.tt + IAR.bestcase[2,jj] * rho.tc
-  ## IAR.human.old[2,jj] <- IAR.bestcase[2,jj] * rho.cc + IAR.bestcase[1,jj] * rho.ct
-  ## IAR.hummoz.old[1,jj] <- IAR.mosquito[1,jj] * rho.tt + IAR.mosquito[2,jj] * rho.tc
-  ## IAR.hummoz.old[2,jj] <- IAR.mosquito[2,jj] * rho.cc + IAR.mosquito[1,jj] * rho.ct
+  IAR.human.old[1,jj] <- IAR.bestcase[1,jj] * rho.tt + IAR.bestcase[2,jj] * rho.tc
+  IAR.human.old[2,jj] <- IAR.bestcase[2,jj] * rho.cc + IAR.bestcase[1,jj] * rho.ct
+  IAR.hummoz.old[1,jj] <- IAR.mosquito[1,jj] * rho.tt + IAR.mosquito[2,jj] * rho.tc
+  IAR.hummoz.old[2,jj] <- IAR.mosquito[2,jj] * rho.cc + IAR.mosquito[1,jj] * rho.ct
 }
 
 # compute efficacy
@@ -182,17 +182,17 @@ efficacy.human <- 1 - (IAR.human[1,] / IAR.human[2,]) * (1 - IAR.human[2,]) / (1
 efficacy.hummoz <- 1 - (IAR.hummoz[1,] / IAR.hummoz[2,]) * (1 - IAR.hummoz[2,]) / (1 - IAR.hummoz[1,])
 efficacy.humsupp <- 1 - (IAR.humsupp[1,] / IAR.humsupp[2,]) * (1 - IAR.humsupp[2,]) / (1 - IAR.humsupp[1,])
 efficacy.fullmodel <- 1 - (IAR.fullmodel[1,] / IAR.fullmodel[2,]) * (1 - IAR.fullmodel[2,]) / (1 - IAR.fullmodel[1,])
-## efficacy.human.old <- 1 - (IAR.human.old[1,] / IAR.human.old[2,]) * (1 - IAR.human.old[2,]) / (1 - IAR.human.old[1,])
-## efficacy.hummoz.old <- 1 - (IAR.hummoz.old[1,] / IAR.hummoz.old[2,]) * (1 - IAR.hummoz.old[2,]) / (1 - IAR.hummoz.old[1,])
+efficacy.human.old <- 1 - (IAR.human.old[1,] / IAR.human.old[2,]) * (1 - IAR.human.old[2,]) / (1 - IAR.human.old[1,])
+efficacy.hummoz.old <- 1 - (IAR.hummoz.old[1,] / IAR.hummoz.old[2,]) * (1 - IAR.hummoz.old[2,]) / (1 - IAR.hummoz.old[1,])
 
 # compute the fraction of the bias attributable to each phenomenon
 # assuming the following embedding, in this case: bestcase -> human -> hummoz -> fullmodel
 frac.bias.human <-  (efficacy.bestcase - efficacy.human) / (efficacy.bestcase - efficacy.fullmodel)
 frac.bias.hummoz <- (efficacy.human - efficacy.hummoz) / (efficacy.bestcase - efficacy.fullmodel)
 frac.bias.fullmodel <- 1 - frac.bias.hummoz - frac.bias.human
-## frac.bias.human.old <-  (efficacy.bestcase - efficacy.human.old) / (efficacy.bestcase - efficacy.fullmodel)
-## frac.bias.hummoz.old <- (efficacy.human.old - efficacy.hummoz.old) / (efficacy.bestcase - efficacy.fullmodel)
-## frac.bias.fullmodel.old <- 1 - frac.bias.hummoz.old - frac.bias.human.old
+frac.bias.human.old <-  (efficacy.bestcase - efficacy.human.old) / (efficacy.bestcase - efficacy.fullmodel)
+frac.bias.hummoz.old <- (efficacy.human.old - efficacy.hummoz.old) / (efficacy.bestcase - efficacy.fullmodel)
+frac.bias.fullmodel.old <- 1 - frac.bias.hummoz.old - frac.bias.human.old
 
 
 # save output 
@@ -212,11 +212,11 @@ save(epsilon.vec,
      frac.bias.human,
      frac.bias.hummoz,
      frac.bias.fullmodel,
-     ## IAR.human.old,
-     ## IAR.hummoz.old,
-     ## efficacy.human.old,
-     ## efficacy.hummoz.old,
-     ## frac.bias.human.old,
-     ## frac.bias.hummoz.old,
-     ## frac.bias.fullmodel.old,
+     IAR.human.old,
+     IAR.hummoz.old,
+     efficacy.human.old,
+     efficacy.hummoz.old,
+     frac.bias.human.old,
+     frac.bias.hummoz.old,
+     frac.bias.fullmodel.old,
      file = './fig_2_tempSIRvarC.RData')

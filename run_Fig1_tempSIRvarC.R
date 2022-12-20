@@ -27,11 +27,11 @@ Cc.fn <- approxfun(as.numeric(Cc.mean$Date - min(Cc.mean$Date)),Cc.mean$wMel.mea
 wMel.start.date <- min(Ct$Date)
 
 ## plot cluster wMel frequencies to check make sense
-pdf("wMel_frequency.pdf",width=14)
+jpeg("wMel_frequency.jpg",width=14,height=7,units="in",res=600)
 par(mfrow=c(1,2))
 plot(wMel.mean~Date,data=Ct.mean,
      col="red",lwd=3,ylim=c(0,1),type='b',
-     main="Treatment",xlab="Date",ylab="wMel frequency")
+     main="A. Treatment",xlab="Date",ylab="wMel frequency")
 for (cluster in Ct.clusters) {
     lines(wMel~Date,data=Ct[Cluster==cluster],col=adjustcolor("grey",0.8))
 }
@@ -40,7 +40,7 @@ for (cluster in Ct.clusters) {
 ##       col="green",lwd=2)
 plot(wMel.mean~Date,data=Cc.mean,
      col="red",lwd=3,ylim=c(0,1),type='b',
-     main="Control",xlab="Date",ylab="wMel frequency")
+     main="B. Control",xlab="Date",ylab="wMel frequency")
 for (cluster in Cc.clusters) {
     lines(wMel~Date,data=Cc[Cluster==cluster],col=adjustcolor("grey",0.8))
 }
@@ -149,11 +149,11 @@ rho.match <- rho.vec.temp[which.min(abs(fullmodel.fn(rho.vec.temp)-humsupp.fn(rh
 b.vec.temp <- seq(0,1000,0.1)
 b.match <- b.vec.temp[which.min(abs(rho.match-rho_tt_checker(b.vec.temp,1e3)))]
 
-pdf("comparing_efficacies.pdf")
+jpeg("comparing_efficacies.jpg",width=7,height=7,res=600,units="in")
 plot(NA, NA, xlim = c(0.9,0.95), ylim = c(0.45,0.55), axes = F,
      xaxs = 'i', yaxs = 'i', xlab = '', ylab = '')
-abline(h = seq(from = 0.5, to = 1, by = 0.1),
-       v = seq(from = 0.75, to = 1, by = 0.05),
+abline(h = seq(from = 0.45, to = 1, by = 0.01),
+       v = seq(from = 0.75, to = 1, by = 0.01),
        col = col2alpha('gray', alpha = 0.5), lwd = 1.25, lty = 3)
 contour(rho.implied.vec, epsilon.implied.vec,
         efficacy.implied,levels = c(0.771),
@@ -268,15 +268,15 @@ rho.b.vec = seq(0.8,1,by=0.001)
 epsilon.b.98 = c(
   epsilon.implied.vec[which.min(abs(
     efficacy.implied[which.min(
-      abs(rho.implied.vec-rho_tt_checker(60,1e3))),] -
+      abs(rho.implied.vec-rho_tt_checker(b.98,1e3))),] -
       efficacy.trial[1]))],
   epsilon.implied.vec[which.min(abs(
     efficacy.implied[which.min(
-      abs(rho.implied.vec-rho_tt_checker(60,1e3))),] -
+      abs(rho.implied.vec-rho_tt_checker(b.98,1e3))),] -
       efficacy.trial[2]))],
   epsilon.implied.vec[which.min(abs(
     efficacy.implied[which.min(
-      abs(rho.implied.vec-rho_tt_checker(60,1e3))),] -
+      abs(rho.implied.vec-rho_tt_checker(b.98,1e3))),] -
       efficacy.trial[3]))])
 
 epsilon.b.90 = c(epsilon.implied.vec[which.min(abs(
@@ -294,7 +294,7 @@ epsilon.b.90 = c(epsilon.implied.vec[which.min(abs(
 
 ## Analysis 4 - what if the dimensions of the checkerboard were bigger or smaller?
 epsilon.delta.vec = epsilon.trial
-b.delta.vec = 60
+b.delta.vec = b.match
 delta.vec = seq(1e2,1e4,length.out=200)
 efficacy.delta = matrix(0,3,length(delta.vec))
 for(ii in 1:length(epsilon.delta.vec)){

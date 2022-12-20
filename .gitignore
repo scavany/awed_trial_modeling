@@ -50,3 +50,6 @@ vignettes/*.pdf
 # Emacs autosave files
 *~
 \#*\#
+
+# Old files
+old_stuff

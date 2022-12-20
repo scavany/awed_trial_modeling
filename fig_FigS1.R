@@ -8,7 +8,7 @@ rm(list = ls())
 if(!require(seqinr)){install.packages('seqinr'); library(seqinr)}
 
 # load output
-load('./fig_2.RData')
+load('./fig_2_tempSIRvarC.RData')
 
 # specify palette 
 palette <- c('#222222',

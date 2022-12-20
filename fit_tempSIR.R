@@ -15,9 +15,9 @@ source('functions_trial_sim.R')
 source('functions_immune_history.R')
 
 ## Control parms
-fit.model <- TRUE
+fit.model <- FALSE
 save.fit <- FALSE
-regenerate.plot <- FALSE
+regenerate.plot <- TRUE
 
 ## load data https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6221224/
 popn.yogyakarta <- 417744
@@ -148,26 +148,67 @@ out[,monthly.infections:=sum(daily.infections,na.rm=TRUE),by=yearmonth]
 out.monthly <- out[,.(monthly.infections=sum(daily.infections,na.rm=TRUE)),by=yearmonth
                    ][data,on=.(yearmonth=yearmonth)]
 
-if (regenerate.plot) pdf("optim_fit_tempSIR.pdf",width=14)
+## if (regenerate.plot) jpeg("optim_fit_tempSIR.jpg",width=14,height=7,units="in",res=600)
+## plot(x=out.monthly$date,y=rep(NA,nrow(out.monthly)),
+##      ylim=c(0,1.1*max(out.monthly$monthly.infections*underreporting,out.monthly$monthly.cases)),
+##      xlab="Date",ylab="Monthly cases",
+##      bty="n",las=1,yaxs="i")
+## polygon(c(out.monthly$date,rev(out.monthly$date)),
+##         c(rep(0,nrow(out.monthly)),rev(out.monthly$monthly.infections * underreporting)),
+##         col=adjustcolor("grey",0.5),
+##         border=FALSE)
+## points(avg.monthly.cases~date,data=data,col="red",type="b",lwd=2)
+## points(monthly.cases~date,data=data,col=adjustcolor("red",0.3),type="b",lwd=0.5)
+## legend("topright",legend=c("model","data - averaged","data - raw"),fill=c(adjustcolor("grey",0.5),rep(NA,2)),
+##        pch=c(NA,1,1),col=c(NA,"red",adjustcolor("red",0.3)),lty=c(NA,1,1),border=FALSE,bty="n",lwd=c(NA,2,0.5))
+## if (regenerate.plot) dev.off()
+
+## if (regenerate.plot) jpeg("optim_fit_tempSIR_darker.jpg",width=14,height=7,units="in",res=600)
+## plot(x=out.monthly$date,y=rep(NA,nrow(out.monthly)),
+##      ylim=c(0,1.1*max(out.monthly$monthly.infections*underreporting,out.monthly$monthly.cases)),
+##      xlab="Date",ylab="Monthly cases",
+##      bty="n",las=1,yaxs="i")
+## polygon(c(out.monthly$date,rev(out.monthly$date)),
+##         c(rep(0,nrow(out.monthly)),rev(out.monthly$monthly.infections * underreporting)),
+##         col=adjustcolor("grey",0.5),
+##         border=FALSE)
+## points(avg.monthly.cases~date,data=data,col="red",type="b",lwd=2)
+## points(monthly.cases~date,data=data,col=adjustcolor("red",0.7),type="b",lwd=0.5)
+## legend("topright",legend=c("model","data - averaged","data - raw"),fill=c(adjustcolor("grey",0.5),rep(NA,2)),
+##        pch=c(NA,1,1),col=c(NA,"red",adjustcolor("red",0.7)),lty=c(NA,1,1),border=FALSE,bty="n",lwd=c(NA,2,0.5))
+## if (regenerate.plot) dev.off()
+
+if (regenerate.plot) jpeg("optim_fit_tempSIR_lines.jpg",width=14,height=7,units="in",res=600)
 plot(x=out.monthly$date,y=rep(NA,nrow(out.monthly)),
      ylim=c(0,1.1*max(out.monthly$monthly.infections*underreporting,out.monthly$monthly.cases)),
      xlab="Date",ylab="Monthly cases",
      bty="n",las=1,yaxs="i")
-polygon(c(out.monthly$date,rev(out.monthly$date)),
-        c(rep(0,nrow(out.monthly)),rev(out.monthly$monthly.infections * underreporting)),
-        col=adjustcolor("grey",0.5),
-        border=FALSE)
-points(avg.monthly.cases~date,data=data,col="red",type="b",lwd=2)
-points(monthly.cases~date,data=data,col=adjustcolor("red",0.3),type="b",lwd=0.5)
-legend("topright",legend=c("model","data - averaged","data - raw"),fill=c(adjustcolor("grey",0.5),rep(NA,2)),
-       pch=c(NA,1,1),col=c(NA,"red",adjustcolor("red",0.3)),lty=c(NA,1,1),border=FALSE,bty="n",lwd=c(NA,2,0.5))
+points(monthly.cases~date,data=data,col="darkgray",type="b",pch=1,lwd=1.5)
+points(avg.monthly.cases~date,data=data,col="black",type="b",cex=1.5,lwd=1.5)
+lines(out.monthly$date,out.monthly$monthly.infections * underreporting,
+      col=adjustcolor("red",1),lwd=3)
+legend("topright",legend=c("model","data - averaged","data - raw"),fill=NA,#c(adjustcolor("grey",0.5),rep(NA,2)),
+       pch=c(NA,1,1),col=c("red","black","gray"),lty=c(1,1,1),border=FALSE,bty="n",
+       lwd=c(3,2,2),pt.cex=c(NA,1.5,1))
+if (regenerate.plot) dev.off()
+
+if (regenerate.plot) jpeg("optim_fit_tempSIR_poster.jpg",width=15.4,height=7.1,units="in",res=600,pointsize=20)
+plot(x=out.monthly$date,y=rep(NA,nrow(out.monthly)),
+     ylim=c(0,1.1*max(out.monthly$monthly.infections*underreporting,out.monthly$monthly.cases)),
+     xlab="Date",ylab="Monthly cases",
+     bty="n",las=1,yaxs="i")
+points(monthly.cases~date,data=data,col="darkgray",type="b",pch=1,lwd=1.5)
+points(avg.monthly.cases~date,data=data,col="black",type="b",cex=1.5,lwd=1.5)
+lines(out.monthly$date,out.monthly$monthly.infections * underreporting,
+      col=adjustcolor("red",1),lwd=3)
+legend(as.Date("2011-03-01"),280,legend=c("model","data - averaged","data - raw"),fill=NA,#c(adjustcolor("grey",0.5),rep(NA,2)),
+       pch=c(NA,1,1),col=c("red","black","gray"),lty=c(1,1,1),border=FALSE,bty="n",
+       lwd=c(3,2,2),pt.cex=c(NA,1.5,1))
 if (regenerate.plot) dev.off()
 
 ## Save ICs for each season
 yearly.ics <- out[yday(date)==1,.(year=year(date),S4,I3,R3,S3,I2,R2,S2,I1,R1,S1,I0,R0)]
 if (save.fit) save(yearly.ics,file="yearly_initial_conditions.RData")
-
-
 
 
 ## Check mcmc fit
