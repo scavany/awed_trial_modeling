@@ -24,3 +24,8 @@ The following two files contain necessary functions for the above scripts:
 * functions_immune_history.R contains functions for calculating seropositivity from force of infection
 * functions_trial_sim.R contains the ODE models and the functions for calculating the human movement parameters from the trial layout
 
+### Overview of data
+* AWED_Data.csv contains data from Utarini et al on the proportion of sampled mosquitoes that were wMel positive by cluster
+* pop_by_age_Indonesia.csv contains the population age structure of Indonesia
+* wei_movement.csv contains estimates of the efficacy from the per-protocol analysis of Utarini et al
+* yogyakarta_dengue_incidence.csv and yogyakarta_seropositivity.csv contain data on dengue incidence and seropositivity in Yogyakarta respectively from Indriani et al
