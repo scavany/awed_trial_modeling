@@ -36,7 +36,7 @@ plot(incidence~date,data=data,type='b',xlab="Date",ylab="Incidence")
 lines(average~date,data=data,col='red',lty=2,lwd=2)
 
 ## Parameters
-load("foi_and_r0.RData")
+## load("foi_and_r0.RData")
 load("foi_yogya.RData")
 pop.age = read.csv('./pop_by_age_Indonesia.csv')
 age.dist = cbind(

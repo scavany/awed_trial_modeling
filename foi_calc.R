@@ -2,7 +2,7 @@ library(data.table)
 
 ## yogyakarta data
 data <- fread("./yogyakarta_seropositivity.csv")
-load("foi_and_r0.RData")
+## load("foi_and_r0.RData")
 
 foi.fn <- function(foi,ages=data$age_high) 1-exp(-foi*ages)
 fit.fn <- function(par) sum(abs(data$seropos_mean/100-foi.fn(par)))
